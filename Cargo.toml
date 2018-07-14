@@ -1,0 +1,8 @@
+[package]
+name = "kolli-desu"
+version = "0.1.0"
+authors = ["delma <delma@del.ma>"]
+
+[dependencies]
+nalgebra = "0.14.1"
+alga = "0.5.2"
