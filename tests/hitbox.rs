@@ -30,32 +30,31 @@ fn assert_not_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
     lamppa(Point::new(1000., 1000.));
 }
 
-fn circle(displacement: Vector<f32>, radius: f32) -> Hitbox {
-    Hitbox::Circle {
-        displacement,
-        radius
-    }
-}
 
-fn aabb(displacement: Vector<f32>, dims: Vector<f32>) -> Hitbox {
-    Hitbox::Aabb {
-        displacement,
-        width: dims.x,
-        height: dims.y,
-    }
-}
 
 #[test]
 fn circle_circle_offset_non_collision() {
-    let circle = circle(Vector::new(0., 0.), 1.);
+    let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
     assert!(!Hitbox::collides((&circle, zero()), (&circle, Point::new(1000., 1000.))));
 }
 
 #[test]
+fn aabb_aabb_offset_non_collision() {
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    assert!(!Hitbox::collides((&aabb, zero()), (&aabb, Point::new(1000., 1000.))));
+}
+
+#[test]
+fn rectangle_rectangle_offset_non_collision() {
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    assert!(!Hitbox::collides((&aabb, zero()), (&aabb, Point::new(1000., 1000.))));
+}
+
+#[test]
 fn circle_circle_collision() {
-    let circle1 = circle(Vector::new(0., 0.), 1.);
-    let circle2 = circle(Vector::new(1.9, 0.), 1.);
-    let circle3 = circle(Vector::new(2., 2.), 1.);
+    let circle1 = Hitbox::circle(Vector::new(0., 0.), 1.);
+    let circle2 = Hitbox::circle(Vector::new(1.9, 0.), 1.);
+    let circle3 = Hitbox::circle(Vector::new(2., 2.), 1.);
 
     assert_collides(&circle1, &circle2);
 
@@ -65,10 +64,10 @@ fn circle_circle_collision() {
 
 #[test]
 fn aabb_aabb_collision() {
-    let aabb1 = aabb(Vector::new(0.5, 0.5), Vector::new(1., 1.));
-    let aabb2 = aabb(Vector::new(-0.5, -0.5), Vector::new(1., 1.));
-    let aabb3 = aabb(Vector::new(1.6, 2.6), Vector::new(1., 2.));
-    let aabb4 = aabb(Vector::new(50., 50.), Vector::new(100., 150.));
+    let aabb1 = Hitbox::aabb(Vector::new(0.5, 0.5), Vector::new(1., 1.));
+    let aabb2 = Hitbox::aabb(Vector::new(-0.5, -0.5), Vector::new(1., 1.));
+    let aabb3 = Hitbox::aabb(Vector::new(1.6, 2.6), Vector::new(1., 2.));
+    let aabb4 = Hitbox::aabb(Vector::new(50., 50.), Vector::new(100., 150.));
 
     assert_collides(&aabb1, &aabb2);
     assert_collides(&aabb1, &aabb4);
@@ -81,17 +80,17 @@ fn aabb_aabb_collision() {
 
 #[test]
 fn crossing_aabb_aabb_collision() {
-    let aabb1 = aabb(Vector::new(0.0, 0.0), Vector::new(10., 1.));
-    let aabb2 = aabb(Vector::new(0.0, 0.0), Vector::new(1., 10.));
+    let aabb1 = Hitbox::aabb(Vector::new(0.0, 0.0), Vector::new(10., 1.));
+    let aabb2 = Hitbox::aabb(Vector::new(0.0, 0.0), Vector::new(1., 10.));
     assert_collides(&aabb1, &aabb2);
 }
 
 #[test]
 fn circle_aabb_collision() {
-    let aabb1 = aabb(Vector::new(0., 0.), Vector::new(1., 1.));
-    let circle1 = circle(Vector::new(0., 0.), 1.);
-    let aabb2 = aabb(Vector::new(2., 2.), Vector::new(1., 1.));
-    let circle2 = circle(Vector::new(2., 2.), 1.);
+    let aabb1 = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    let circle1 = Hitbox::circle(Vector::new(0., 0.), 1.);
+    let aabb2 = Hitbox::aabb(Vector::new(2., 2.), Vector::new(1., 1.));
+    let circle2 = Hitbox::circle(Vector::new(2., 2.), 1.);
 
     assert_collides(&aabb1, &circle1);
     assert_collides(&aabb2, &circle2);
@@ -105,7 +104,7 @@ fn circle_aabb_collision() {
 #[test]
 fn rectangle_circle_inside() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(0.5, 0.5), 0.5);
+    let circle = Hitbox::circle(Vector::new(0.5, 0.5), 0.5);
 
     assert_collides(&rectangle, &circle);
 }
@@ -113,7 +112,7 @@ fn rectangle_circle_inside() {
 #[test]
 fn rectangle_circle_really_distant() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(100., 100.), 1.);
+    let circle = Hitbox::circle(Vector::new(100., 100.), 1.);
 
     assert_not_collides(&rectangle, &circle);
 }
@@ -121,7 +120,7 @@ fn rectangle_circle_really_distant() {
 #[test]
 fn rectangle_circle_right_side_touching() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(2., 1.), 1.);
+    let circle = Hitbox::circle(Vector::new(2., 1.), 1.);
 
     assert_collides(&rectangle, &circle);
 }
@@ -129,7 +128,7 @@ fn rectangle_circle_right_side_touching() {
 #[test]
 fn rectangle_circle_left_side_touching() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(-2., 1.), 1.);
+    let circle = Hitbox::circle(Vector::new(-2., 1.), 1.);
 
     assert_collides(&rectangle, &circle);
 }
@@ -137,7 +136,7 @@ fn rectangle_circle_left_side_touching() {
 #[test]
 fn rectangle_circle_up_side_touching() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(0., 3.), 1.);
+    let circle = Hitbox::circle(Vector::new(0., 3.), 1.);
 
     assert_collides(&rectangle, &circle);
 }
@@ -145,7 +144,7 @@ fn rectangle_circle_up_side_touching() {
 #[test]
 fn rectangle_circle_lower_side_touching() {
     let rectangle = Hitbox::Rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = circle(Vector::new(0., -1.), 1.);
+    let circle = Hitbox::circle(Vector::new(0., -1.), 1.);
 
     assert_collides(&rectangle, &circle);
 }
@@ -153,7 +152,7 @@ fn rectangle_circle_lower_side_touching() {
 #[test]
 fn rectangle_circle_close_to_side() {
     let rectangle = Hitbox::Rectangle(Point::new(1., -1.), Point::new(2., -1.), 2.);
-    let circle = circle(Vector::new(0., 0.), 1.);
+    let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
 
     assert_collides(&rectangle, &circle);
 }
@@ -161,14 +160,14 @@ fn rectangle_circle_close_to_side() {
 #[test]
 fn rectangle_circle_close_to_side_not_touching() {
     let rectangle = Hitbox::Rectangle(Point::new(1.001, -1.), Point::new(2., -1.), 2.);
-    let circle = circle(Vector::new(0., 0.), 1.);
+    let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
 
     assert_not_collides(&rectangle, &circle);
 }
 
 #[test]
 fn rectangle_aabb_partial_overlap() {
-    let aabb = aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
     let rectangle = Hitbox::Rectangle(Point::new(-1., -1.), Point::new(0.5, 0.), 1.);
 
     assert_collides(&rectangle, &aabb);
@@ -176,7 +175,7 @@ fn rectangle_aabb_partial_overlap() {
 
 #[test]
 fn rectangle_aabb_left() {
-    let aabb = aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
     let rectangle = Hitbox::Rectangle(Point::new(-1., -1.), Point::new(-0.4, 0.), 1.);
 
     assert_not_collides(&rectangle, &aabb);
@@ -184,7 +183,7 @@ fn rectangle_aabb_left() {
 
 #[test]
 fn rectangle_aabb_above_left() {
-    let aabb = aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
     let rectangle = Hitbox::Rectangle(Point::new(-1., -1.), Point::new(0., 3.), 1.);
 
     assert_not_collides(&rectangle, &aabb);
@@ -192,7 +191,7 @@ fn rectangle_aabb_above_left() {
 
 #[test]
 fn rectangle_aabb_below() {
-    let aabb = aabb(Vector::new(0., 0.), Vector::new(1., 1.));
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
     let rectangle = Hitbox::Rectangle(Point::new(-4., -4.), Point::new(1., -4.), 0.2);
 
     assert_not_collides(&rectangle, &aabb);
