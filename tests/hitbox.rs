@@ -46,8 +46,32 @@ fn aabb_aabb_offset_non_collision() {
 
 #[test]
 fn rectangle_rectangle_offset_non_collision() {
+    let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 0.), 1.);
+    assert!(!Hitbox::collides((&rectangle, zero()), (&rectangle, Point::new(1000., 1000.))));
+}
+
+#[test]
+fn aabb_rectangle_offset_non_collision() {
     let aabb = Hitbox::aabb(Vector::new(0., 0.), Vector::new(1., 1.));
-    assert!(!Hitbox::collides((&aabb, zero()), (&aabb, Point::new(1000., 1000.))));
+    let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 1.);
+    assert!(!Hitbox::collides((&rectangle, zero()), (&aabb, Point::new(1000., 1000.))));
+    assert!(!Hitbox::collides((&aabb, zero()), (&rectangle, Point::new(1000., 1000.))));
+}
+
+#[test]
+fn rectangle_dot_offset_non_collision() {
+    let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 1.);
+    let point = Hitbox::dot(Vector::new(0., 0.5));
+    assert!(!Hitbox::collides((&rectangle, zero()), (&point, Point::new(1000., 1000.))));
+    assert!(!Hitbox::collides((&point, zero()), (&rectangle, Point::new(1000., 1000.))));
+}
+
+#[test]
+fn line_segment_line_segment_non_collision() {
+    let ls1 = Hitbox::line_segment(Vector::new(-1., -1.), Vector::new(1., 1.));
+    let ls2 = Hitbox::line_segment(Vector::new(1., -1.), Vector::new(-1., 1.));
+    assert!(!Hitbox::collides((&ls1, zero()), (&ls2, Point::new(1000., 1000.))));
+    assert!(!Hitbox::collides((&ls2, zero()), (&ls1, Point::new(1000., 1000.))));
 }
 
 #[test]
