@@ -1,14 +1,15 @@
-extern crate nalgebra as na;
 extern crate alga;
+extern crate nalgebra as na;
 
 use std::fmt::Debug;
 use std::ops::Neg;
 
 use alga::linear::Transformation;
 
-use na::{Rotation2, zero, dot};
+use na::{dot, zero, Rotation2};
 
 pub type Vector<T> = na::Vector2<T>;
+
 pub type Point<T> = na::Point2<T>;
 
 pub trait Perp {
@@ -37,16 +38,16 @@ pub enum Hitbox {
         height: f32,
     },
     Rectangle {
-        from: Vector<f32>, 
-        to: Vector<f32>, 
-        thickness: f32
+        from: Vector<f32>,
+        to: Vector<f32>,
+        thickness: f32,
     },
     Line {
-        displacement: Vector<f32>, 
-        direction: Vector<f32>
+        displacement: Vector<f32>,
+        direction: Vector<f32>,
     },
     LineSegment {
-        from: Vector<f32>, 
+        from: Vector<f32>,
         to: Vector<f32>,
     },
     Dot {
@@ -54,12 +55,8 @@ pub enum Hitbox {
     },
 }
 impl Hitbox {
-
     pub fn circle(center: Vector<f32>, radius: f32) -> Hitbox {
-        Hitbox::Circle {
-            center,
-            radius,
-        }
+        Hitbox::Circle { center, radius }
     }
 
     pub fn aabb(center: Vector<f32>, width: f32, height: f32) -> Hitbox {
@@ -79,10 +76,7 @@ impl Hitbox {
     }
 
     pub fn line_segment(from: Vector<f32>, to: Vector<f32>) -> Hitbox {
-        Hitbox::LineSegment {
-            from,
-            to,
-        }
+        Hitbox::LineSegment { from, to }
     }
 
     pub fn line(displacement: Vector<f32>, direction: Vector<f32>) -> Hitbox {
@@ -93,9 +87,7 @@ impl Hitbox {
     }
 
     pub fn dot(displacement: Vector<f32>) -> Hitbox {
-        Hitbox::Dot {
-            displacement,
-        }
+        Hitbox::Dot { displacement }
     }
 
     pub fn enclosing_aabb(&self, pos: &Point<f32>) -> (Point<f32>, Point<f32>) {
@@ -120,14 +112,53 @@ impl Hitbox {
         unimplemented!()
     }
 
-    pub fn collides<'a>((hitbox1, pos1): (&'a Hitbox, Point<f32>), (hitbox2, pos2): (&'a Hitbox, Point<f32>)) -> bool {
+    pub fn collides<'a>(
+        (hitbox1, pos1): (&'a Hitbox, Point<f32>),
+        (hitbox2, pos2): (&'a Hitbox, Point<f32>),
+    ) -> bool {
         use self::Hitbox::*;
         match (hitbox1, pos1, hitbox2, pos2) {
-            (Circle { center: a_lpos, radius: a_radius }, pos1, Circle { center: b_lpos, radius: b_radius }, pos2) => {
-                ((pos1 + *a_lpos) - (pos2 + *b_lpos)).norm_squared() <= (*a_radius + *b_radius).powi(2)
+            (
+                Circle {
+                    center: a_lpos,
+                    radius: a_radius,
+                },
+                pos1,
+                Circle {
+                    center: b_lpos,
+                    radius: b_radius,
+                },
+                pos2,
+            ) => {
+                ((pos1 + *a_lpos) - (pos2 + *b_lpos)).norm_squared()
+                    <= (*a_radius + *b_radius).powi(2)
             }
-            (Circle { center: c_lpos, radius: c_radius }, pos1, Aabb { center: a_lpos, width, height }, pos2)
-            | (Aabb { center: a_lpos, width, height }, pos2, Circle { center: c_lpos, radius: c_radius }, pos1) => {
+            (
+                Circle {
+                    center: c_lpos,
+                    radius: c_radius,
+                },
+                pos1,
+                Aabb {
+                    center: a_lpos,
+                    width,
+                    height,
+                },
+                pos2,
+            )
+            | (
+                Aabb {
+                    center: a_lpos,
+                    width,
+                    height,
+                },
+                pos2,
+                Circle {
+                    center: c_lpos,
+                    radius: c_radius,
+                },
+                pos1,
+            ) => {
                 let width = width.abs() / 2.;
                 let height = height.abs() / 2.;
                 let aabb_center = (pos2 + a_lpos);
@@ -137,25 +168,33 @@ impl Hitbox {
                     ca = ca.normalize();
                 }
                 let outer = circle_center + *c_radius * ca;
-                point_in_aabb(
-                    outer, (aabb_center, width, height),
-                )
+                point_in_aabb(outer, (aabb_center, width, height))
             }
             (
-                Circle { center: c_lpos, radius: c_radius }, pos1,
-                &Rectangle{
-                   from: r_spos,
-                   to: r_epos,
-                   thickness: r_height,
-                }, pos2,
+                Circle {
+                    center: c_lpos,
+                    radius: c_radius,
+                },
+                pos1,
+                &Rectangle {
+                    from: r_spos,
+                    to: r_epos,
+                    thickness: r_height,
+                },
+                pos2,
             )
             | (
-                &Rectangle{
-                   from: r_spos,
-                   to: r_epos,
-                   thickness: r_height,
-                }, pos2,
-                Circle { center: c_lpos, radius: c_radius }, pos1
+                &Rectangle {
+                    from: r_spos,
+                    to: r_epos,
+                    thickness: r_height,
+                },
+                pos2,
+                Circle {
+                    center: c_lpos,
+                    radius: c_radius,
+                },
+                pos1,
             ) => {
                 let rotation =
                     Rotation2::rotation_between(&(r_epos - r_spos), &Vector::new(1., 0.));
@@ -164,28 +203,60 @@ impl Hitbox {
                 let aabb_center = Vector::new(aabb_width / 2., r_height / 2.);
                 let aabb = Aabb {
                     center: aabb_center,
-                    width: aabb_width, 
-                    height: r_height
+                    width: aabb_width,
+                    height: r_height,
                 };
-                Hitbox::collides((&aabb, pos1), (&Circle { center: rot_circle, radius: *c_radius }, pos2))
-            }
-            (Aabb { center: aabb_pos, width, height }, pos1, r @ &Rectangle{..}, pos2)
-            | (r @ &Rectangle{..}, pos2, Aabb { center: aabb_pos, width, height }, pos1) => {
-                let s_pos = aabb_pos;
-                let e_pos = aabb_pos + Vector::new(*width, 0.);
-                Hitbox::collides((r, pos1), (&Hitbox::rectangle(*s_pos, e_pos, *height), pos2))
+                Hitbox::collides(
+                    (&aabb, pos1),
+                    (
+                        &Circle {
+                            center: rot_circle,
+                            radius: *c_radius,
+                        },
+                        pos2,
+                    ),
+                )
             }
             (
-                &Rectangle{
-                   from: r1_spos,
-                   to: r1_epos,
-                   thickness: r1_height,
-                }, pos1,
-                &Rectangle{
-                   from: r2_spos,
-                   to: r2_epos,
-                   thickness: r2_height,
-                }, pos2
+                Aabb {
+                    center: aabb_pos,
+                    width,
+                    height,
+                },
+                pos1,
+                r @ &Rectangle { .. },
+                pos2,
+            )
+            | (
+                r @ &Rectangle { .. },
+                pos2,
+                Aabb {
+                    center: aabb_pos,
+                    width,
+                    height,
+                },
+                pos1,
+            ) => {
+                let s_pos = aabb_pos;
+                let e_pos = aabb_pos + Vector::new(*width, 0.);
+                Hitbox::collides(
+                    (r, pos1),
+                    (&Hitbox::rectangle(*s_pos, e_pos, *height), pos2),
+                )
+            }
+            (
+                &Rectangle {
+                    from: r1_spos,
+                    to: r1_epos,
+                    thickness: r1_height,
+                },
+                pos1,
+                &Rectangle {
+                    from: r2_spos,
+                    to: r2_epos,
+                    thickness: r2_height,
+                },
+                pos2,
             ) => {
                 let perp = (r1_epos - r1_spos).perpendicular().normalize() * r1_height;
                 let a1 = r1_spos;
@@ -220,17 +291,26 @@ impl Hitbox {
                     || Hitbox::collides((r1_line_bc, pos1), (r2_line_ad, pos2))
                     || Hitbox::collides((r1_line_bc, pos1), (r2_line_bc, pos2))
             }
-            (&Rectangle{
-                from: r_spos, 
-                to: r_epos, 
-                thickness: r_height,
-            }, pos1, &Dot{displacement: p}, pos2)
-            | (&Dot{displacement: p}, pos2,
-            &Rectangle{
-                from: r_spos, 
-                to: r_epos, 
-                thickness: r_height,
-            }, pos1) => {
+            (
+                &Rectangle {
+                    from: r_spos,
+                    to: r_epos,
+                    thickness: r_height,
+                },
+                pos1,
+                &Dot { displacement: p },
+                pos2,
+            )
+            | (
+                &Dot { displacement: p },
+                pos2,
+                &Rectangle {
+                    from: r_spos,
+                    to: r_epos,
+                    thickness: r_height,
+                },
+                pos1,
+            ) => {
                 let r_spos = pos1 + r_spos;
                 let r_epos = pos1 + r_epos;
                 let p = pos2 + p;
@@ -244,12 +324,29 @@ impl Hitbox {
                     let diff = b - a;
                     dot(&(c - a), &diff.perpendicular())
                 };
-                which_side((a, b), p) >= 0. && which_side((b, c), p) >= 0.
-                    && which_side((c, d), p) >= 0. && which_side((d, a), p) >= 0.
+                which_side((a, b), p) >= 0.
+                    && which_side((b, c), p) >= 0.
+                    && which_side((c, d), p) >= 0.
+                    && which_side((d, a), p) >= 0.
             }
-            (&Dot{displacement: p1}, pos1, &Dot{displacement: p2}, pos2) => pos1 + p1 == pos2 + p2,
+            (&Dot { displacement: p1 }, pos1, &Dot { displacement: p2 }, pos2) => {
+                pos1 + p1 == pos2 + p2
+            }
 
-            (Aabb { center: a1_lpos, width: a1_width, height: a1_height }, pos1, Aabb { center: a2_lpos, width: a2_width, height: a2_height }, pos2) => {
+            (
+                Aabb {
+                    center: a1_lpos,
+                    width: a1_width,
+                    height: a1_height,
+                },
+                pos1,
+                Aabb {
+                    center: a2_lpos,
+                    width: a2_width,
+                    height: a2_height,
+                },
+                pos2,
+            ) => {
                 let a1_center = pos1 + *a1_lpos;
                 let a2_center = pos2 + *a2_lpos;
                 let a1_width = a1_width.abs() / 2.;
@@ -262,20 +359,32 @@ impl Hitbox {
                     && (a1_center.y + a1_height) >= (a2_center.y - a2_height)
             }
 
-            (&Line{displacement: p1, direction: v1}, pos1, &Line{displacement: p2, direction: v2}, pos2) =>
-                match line_line_intersection_point(&(pos1 + p1), &v1, &(pos2 + p2), &v2) {
-                    Ok(_) => true,
-                    Err(LineIntersectError::Infinite) => true,
-                    Err(LineIntersectError::NoCollision) => false,
+            (
+                &Line {
+                    displacement: p1,
+                    direction: v1,
                 },
-            (&LineSegment{from: a1, to: a2}, pos1, &LineSegment{from: b1, to: b2}, pos2) => {
+                pos1,
+                &Line {
+                    displacement: p2,
+                    direction: v2,
+                },
+                pos2,
+            ) => match line_line_intersection_point(&(pos1 + p1), &v1, &(pos2 + p2), &v2) {
+                Ok(_) => true,
+                Err(LineIntersectError::Infinite) => true,
+                Err(LineIntersectError::NoCollision) => false,
+            },
+            (&LineSegment { from: a1, to: a2 }, pos1, &LineSegment { from: b1, to: b2 }, pos2) => {
                 let a1 = pos1 + a1;
                 let a2 = pos1 + a2;
                 let b1 = pos2 + b1;
                 let b2 = pos2 + b2;
                 match line_line_intersection_point(&a1, &(a2 - a1), &b1, &(b2 - b1)) {
                     Ok(p) => {
-                        p.x >= a1.x.min(a2.x) && p.x <= a1.x.max(a2.x) && p.y >= a1.y.min(a2.y)
+                        p.x >= a1.x.min(a2.x)
+                            && p.x <= a1.x.max(a2.x)
+                            && p.y >= a1.y.min(a2.y)
                             && p.y <= a1.y.max(a2.y)
                             && p.x >= b1.x.min(b2.x)
                             && p.x <= b1.x.max(b2.x)
@@ -283,15 +392,20 @@ impl Hitbox {
                             && p.y <= b1.y.max(b2.y)
                     }
                     Err(LineIntersectError::Infinite) => {
-                        b1.x >= a1.x.min(a2.x) && b1.x <= a1.x.max(a2.x) && b1.y >= a1.y.min(a2.y)
+                        b1.x >= a1.x.min(a2.x)
+                            && b1.x <= a1.x.max(a2.x)
+                            && b1.y >= a1.y.min(a2.y)
                             && b1.y <= a1.y.max(a2.y)
-                            || b2.x >= a1.x.min(a2.x) && b2.x <= a1.x.max(a2.x)
+                            || b2.x >= a1.x.min(a2.x)
+                                && b2.x <= a1.x.max(a2.x)
                                 && b2.y >= a1.y.min(a2.y)
                                 && b2.y <= a1.y.max(a2.y)
-                            || a1.x >= b1.x.min(b2.x) && a1.x <= b1.x.max(b2.x)
+                            || a1.x >= b1.x.min(b2.x)
+                                && a1.x <= b1.x.max(b2.x)
                                 && a1.y >= b1.y.min(b2.y)
                                 && a1.y <= b1.y.max(b2.y)
-                            || a1.x >= b1.x.min(b2.x) && a1.x <= b1.x.max(b2.x)
+                            || a1.x >= b1.x.min(b2.x)
+                                && a1.x <= b1.x.max(b2.x)
                                 && a1.y >= b1.y.min(b2.y)
                                 && a1.y <= b1.y.max(b2.y)
                     }
@@ -330,6 +444,8 @@ pub fn line_line_intersection_point(
 }
 
 fn point_in_aabb(point: Point<f32>, (center, width, height): (Point<f32>, f32, f32)) -> bool {
-    point.x >= (center.x - width) && point.x <= (center.x + width) && point.y >= (center.y - height)
+    point.x >= (center.x - width)
+        && point.x <= (center.x + width)
+        && point.y >= (center.y - height)
         && point.y <= (center.y + height)
 }
