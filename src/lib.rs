@@ -62,11 +62,11 @@ impl Hitbox {
         }
     }
 
-    pub fn aabb(center: Vector<f32>, dims: Vector<f32>) -> Hitbox {
+    pub fn aabb(center: Vector<f32>, width: f32, height: f32) -> Hitbox {
         Hitbox::Aabb {
             center,
-            width: dims.x,
-            height: dims.y,
+            width,
+            height,
         }
     }
 
@@ -126,21 +126,19 @@ impl Hitbox {
             (Circle { center: a_lpos, radius: a_radius }, pos1, Circle { center: b_lpos, radius: b_radius }, pos2) => {
                 ((pos1 + *a_lpos) - (pos2 + *b_lpos)).norm_squared() <= (*a_radius + *b_radius).powi(2)
             }
-            //TODO: implement pos1 and pos2 usage.
             (Circle { center: c_lpos, radius: c_radius }, pos1, Aabb { center: a_lpos, width, height }, pos2)
             | (Aabb { center: a_lpos, width, height }, pos2, Circle { center: c_lpos, radius: c_radius }, pos1) => {
                 let width = width.abs() / 2.;
                 let height = height.abs() / 2.;
-                let aabb_center = *a_lpos;
-                let circle_center = *c_lpos;
+                let aabb_center = (pos2 + a_lpos);
+                let circle_center = (pos1 + c_lpos);
                 let mut ca = aabb_center - circle_center;
                 if ca != zero() {
                     ca = ca.normalize();
                 }
                 let outer = circle_center + *c_radius * ca;
                 point_in_aabb(
-                    Point::from_coordinates(outer),
-                    (Point::from_coordinates(aabb_center), width, height),
+                    outer, (aabb_center, width, height),
                 )
             }
             (
@@ -222,7 +220,6 @@ impl Hitbox {
                     || Hitbox::collides((r1_line_bc, pos1), (r2_line_ad, pos2))
                     || Hitbox::collides((r1_line_bc, pos1), (r2_line_bc, pos2))
             }
-            //TODO: Implement pos1 and pos2 usage.
             (&Rectangle{
                 from: r_spos, 
                 to: r_epos, 
@@ -234,13 +231,16 @@ impl Hitbox {
                 to: r_epos, 
                 thickness: r_height,
             }, pos1) => {
+                let r_spos = pos1 + r_spos;
+                let r_epos = pos1 + r_epos;
+                let p = pos2 + p;
                 let perp = (r_epos - r_spos).perpendicular().normalize() * r_height;
                 let a = &r_spos;
                 let b = &r_epos;
                 let c = &(b + perp);
                 let d = &(a + perp);
 
-                let which_side = |(a, b): (&Vector<f32>, &Vector<f32>), c| {
+                let which_side = |(a, b): (&Point<f32>, &Point<f32>), c| {
                     let diff = b - a;
                     dot(&(c - a), &diff.perpendicular())
                 };
