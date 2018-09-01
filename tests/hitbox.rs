@@ -12,10 +12,10 @@ fn zero() -> Point<f32> {
 
 fn assert_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
     let lamppa = |pos| {
-        assert!(Hitbox::collides((hitbox1, pos), (hitbox2, pos)));
-        assert!(Hitbox::collides((hitbox2, pos), (hitbox1, pos)));
-        assert!(Hitbox::collides((hitbox1, pos), (hitbox1, pos)));
-        assert!(Hitbox::collides((hitbox2, pos), (hitbox2, pos)));
+        assert!(Hitbox::collides((hitbox1, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox1, hitbox2, pos);
+        assert!(Hitbox::collides((hitbox2, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox2, hitbox1, pos);
+        assert!(Hitbox::collides((hitbox1, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox1, hitbox1, pos);
+        assert!(Hitbox::collides((hitbox2, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox2, hitbox2, pos);
     };
     lamppa(zero());
     lamppa(Point::new(1000., 1000.));
@@ -23,11 +23,46 @@ fn assert_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
 
 fn assert_not_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
     let lamppa = |pos| {
-        assert!(!Hitbox::collides((hitbox1, pos), (hitbox2, pos)));
-        assert!(!Hitbox::collides((hitbox2, pos), (hitbox1, pos)));
+        assert!(!Hitbox::collides((hitbox1, pos), (hitbox2, pos)), "{:?} != {:?}, {}", hitbox1, hitbox2, pos);
+        assert!(!Hitbox::collides((hitbox2, pos), (hitbox1, pos)), "{:?} != {:?}, {}", hitbox2, hitbox1, pos);
     };
     lamppa(zero());
     lamppa(Point::new(1000., 1000.));
+}
+
+#[test]
+fn enclosing_aabb_with_circle() {
+//    let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
+//    let enclosing_aabb = Hitbox::Aabb(circle.enclosing_aabb());
+//    let corner_circle = Hitbox::circle(Vector::new(1., 1.), 0.1);
+//    assert_collides(&circle, &enclosing_aabb);
+//    assert_collides(&corner_circle, &enclosing_aabb);
+//    assert_not_collides(&circle, &corner_circle);
+    let circle = Hitbox::circle(Vector::new(0.5, 0.5), 0.5);
+    let enclosing_aabb = Hitbox::Aabb(circle.enclosing_aabb());
+    assert_eq!(Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.), enclosing_aabb);
+}
+
+#[test]
+fn enclosing_aabb_with_aabb() {
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), 2., 2.);
+    let enclosing_aabb = Hitbox::Aabb(aabb.enclosing_aabb());
+    assert_eq!(aabb, enclosing_aabb);
+}
+
+#[test]
+fn enclosing_aabb_with_line_segment() {
+    let line_segment = Hitbox::line_segment(Vector::new(0., 0.), Vector::new(1., 1.));
+    let enclosing_aabb = Hitbox::Aabb(line_segment.enclosing_aabb());
+    assert_eq!(Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.), enclosing_aabb);
+}
+
+#[test]
+fn enclosing_aabb_with_rectangle() {
+    use std::f32::consts::FRAC_1_SQRT_2;
+    let line_segment = Hitbox::rectangle(Vector::new(0.5, 0.), Vector::new(1., 0.5), FRAC_1_SQRT_2);
+    let enclosing_aabb = Hitbox::Aabb(line_segment.enclosing_aabb());
+    assert_eq!(Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.), enclosing_aabb);
 }
 
 #[test]

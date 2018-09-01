@@ -25,18 +25,21 @@ where
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct AABB {
+    center: Vector<f32>,
+    width: f32,
+    height: f32,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Hitbox {
     Circle {
         center: Vector<f32>,
         radius: f32,
     },
     ///First vector denotes the center of the AABB and the second vector denotes the dimensions(width, height) of the AABB
-    Aabb {
-        center: Vector<f32>,
-        width: f32,
-        height: f32,
-    },
+    Aabb(AABB),
     Rectangle {
         from: Vector<f32>,
         to: Vector<f32>,
@@ -54,17 +57,18 @@ pub enum Hitbox {
         displacement: Vector<f32>,
     },
 }
+
 impl Hitbox {
     pub fn circle(center: Vector<f32>, radius: f32) -> Hitbox {
         Hitbox::Circle { center, radius }
     }
 
     pub fn aabb(center: Vector<f32>, width: f32, height: f32) -> Hitbox {
-        Hitbox::Aabb {
+        Hitbox::Aabb(AABB {
             center,
             width,
             height,
-        }
+        })
     }
 
     pub fn rectangle(from: Vector<f32>, to: Vector<f32>, thickness: f32) -> Hitbox {
@@ -90,26 +94,71 @@ impl Hitbox {
         Hitbox::Dot { displacement }
     }
 
-    pub fn enclosing_aabb(&self, pos: &Point<f32>) -> (Point<f32>, Point<f32>) {
+    pub fn enclosing_aabb(&self) -> AABB {
         use self::Hitbox::*;
-        // let pos = pos + self.center();
-        // match *self {
-        //     Circle(_, radius) => (
-        //         pos - Vector::new(radius, radius),
-        //         pos + Vector::new(radius, radius),
-        //     ),
-        //     Aabb(_, side) => (pos - side.abs() / 2., pos + side.abs() / 2.),
-        // }
-        unimplemented!()
+        use std::f32;
+        match self {
+            Circle{center, radius} => AABB {
+                center: center.clone(),
+                width: *radius*2.,
+                height: *radius*2.,
+            },
+            Aabb(aabb) => aabb.clone(),
+            LineSegment {from, to} => AABB {
+                center: self.center().coords,
+                width: (from.x - to.x).abs(),
+                height: (from.y - to.y).abs(),
+            },
+            Rectangle {
+                from,
+                to,
+                thickness,
+            } => {
+                let perp = (to - from).perpendicular().normalize() * *thickness;
+                let fp = from + perp;
+                let tp = to + perp;
+                let cmp = |a: &&f32, b: &&f32| f32::partial_cmp(a, b).unwrap();
+                let xs = [from.x, fp.x, to.x, tp.x];
+                let ys = [from.y, fp.y, to.y, tp.y];
+                let min_x = *xs.iter().min_by(cmp).unwrap();
+                let min_y = *ys.iter().min_by(cmp).unwrap();
+                let max_x = *xs.iter().max_by(cmp).unwrap();
+                let max_y = *ys.iter().max_by(cmp).unwrap();
+                AABB {
+                    center: Vector::new((max_x - min_x) / 2., (max_y - min_y) / 2.),
+                    width: max_x - min_x,
+                    height: max_y - min_y,
+                }
+            },
+            Line { .. } => AABB {
+                center: zero(),
+                width: f32::INFINITY,
+                height: f32::INFINITY,
+            },
+            Dot {
+                displacement
+            } => AABB {
+                center: displacement.clone(),
+                width: 0.,
+                height: 0.,
+            },
+        }
     }
 
     pub fn center(&self) -> Point<f32> {
         use self::Hitbox::*;
-        // match *self {
-        //     Circle(ref center, _) => Point::from_coordinates(*center),
-        //     _ => unimplemented!(),
-        // }
-        unimplemented!()
+        match self {
+            Circle{center, ..} => Point::from_coordinates(*center),
+            Aabb(aabb) => Point::from_coordinates(aabb.center),
+            Rectangle{from, to, thickness} => {
+                let perp = (to - from).perpendicular().normalize() * *thickness;
+                let tp = to + perp;
+                Hitbox::line_segment(*from, tp).center()
+            },
+            LineSegment {from, to} => Point::from_coordinates(from + (to - from)/2.),
+            Dot {displacement} => Point::from_coordinates(*displacement),
+            _ => unimplemented!(),
+        }
     }
 
     pub fn collides<'a>(
@@ -139,19 +188,19 @@ impl Hitbox {
                     radius: c_radius,
                 },
                 pos1,
-                Aabb {
+                Aabb(AABB {
                     center: a_lpos,
                     width,
                     height,
-                },
+                }),
                 pos2,
             )
             | (
-                Aabb {
+                Aabb(AABB {
                     center: a_lpos,
                     width,
                     height,
-                },
+                }),
                 pos2,
                 Circle {
                     center: c_lpos,
@@ -201,11 +250,11 @@ impl Hitbox {
                 let rot_circle = rotation.transform_vector(&(c_lpos - r_spos));
                 let aabb_width = (r_epos - r_spos).norm();
                 let aabb_center = Vector::new(aabb_width / 2., r_height / 2.);
-                let aabb = Aabb {
+                let aabb = Aabb(AABB {
                     center: aabb_center,
                     width: aabb_width,
                     height: r_height,
-                };
+                });
                 Hitbox::collides(
                     (&aabb, pos1),
                     (
@@ -218,11 +267,11 @@ impl Hitbox {
                 )
             }
             (
-                Aabb {
+                Aabb(AABB {
                     center: aabb_pos,
                     width,
                     height,
-                },
+                }),
                 pos1,
                 r @ &Rectangle { .. },
                 pos2,
@@ -230,11 +279,11 @@ impl Hitbox {
             | (
                 r @ &Rectangle { .. },
                 pos2,
-                Aabb {
+                Aabb(AABB {
                     center: aabb_pos,
                     width,
                     height,
-                },
+                }),
                 pos1,
             ) => {
                 let s_pos = aabb_pos;
@@ -334,17 +383,17 @@ impl Hitbox {
             }
 
             (
-                Aabb {
+                Aabb(AABB {
                     center: a1_lpos,
                     width: a1_width,
                     height: a1_height,
-                },
+                }),
                 pos1,
-                Aabb {
+                Aabb(AABB {
                     center: a2_lpos,
                     width: a2_width,
                     height: a2_height,
-                },
+                }),
                 pos2,
             ) => {
                 let a1_center = pos1 + *a1_lpos;
