@@ -32,12 +32,6 @@ fn assert_not_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
 
 #[test]
 fn enclosing_aabb_with_circle() {
-//    let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
-//    let enclosing_aabb = Hitbox::Aabb(circle.enclosing_aabb());
-//    let corner_circle = Hitbox::circle(Vector::new(1., 1.), 0.1);
-//    assert_collides(&circle, &enclosing_aabb);
-//    assert_collides(&corner_circle, &enclosing_aabb);
-//    assert_not_collides(&circle, &corner_circle);
     let circle = Hitbox::circle(Vector::new(0.5, 0.5), 0.5);
     let enclosing_aabb = Hitbox::Aabb(circle.enclosing_aabb());
     assert_eq!(Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.), enclosing_aabb);
@@ -146,6 +140,36 @@ fn line_segment_line_segment_non_collision() {
         (&ls2, zero()),
         (&ls1, Point::new(1000., 1000.))
     ));
+}
+
+#[test]
+fn circle_center() {
+    let circle = Hitbox::circle(Vector::new(1.,1.), 1.);
+    assert_eq!(circle.center(), Point::new(1., 1.));
+}
+
+#[test]
+fn aabb_center() {
+    let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
+    assert_eq!(aabb.center(), Point::new(0., 0.));
+}
+
+#[test]
+fn rectangle_center() {
+    let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 2f32.sqrt());
+    assert!((rectangle.center() - Point::new(0., 1.)).norm() < 0.0000001);
+}
+
+#[test]
+fn line_segment_center() {
+    let line_segment = Hitbox::line_segment(Vector::new(0., 0.), Vector::new(1., 1.));
+    assert!((line_segment.center() - Point::new(0.5, 0.5)).norm() < 0.0000001);
+}
+
+#[test]
+fn dot_center() {
+    let dot = Hitbox::dot(Vector::new(100., 100.));
+    assert_eq!(dot.center(), Point::new(100., 100.));
 }
 
 #[test]

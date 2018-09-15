@@ -99,7 +99,7 @@ impl Hitbox {
         use std::f32;
         match self {
             Circle{center, radius} => AABB {
-                center: center.clone(),
+                center: *center,
                 width: *radius*2.,
                 height: *radius*2.,
             },
@@ -138,7 +138,7 @@ impl Hitbox {
             Dot {
                 displacement
             } => AABB {
-                center: displacement.clone(),
+                center: *displacement,
                 width: 0.,
                 height: 0.,
             },
@@ -155,9 +155,9 @@ impl Hitbox {
                 let tp = to + perp;
                 Hitbox::line_segment(*from, tp).center()
             },
+            Line{..} => panic!("A line does not have a center."),
             LineSegment {from, to} => Point::from_coordinates(from + (to - from)/2.),
             Dot {displacement} => Point::from_coordinates(*displacement),
-            _ => unimplemented!(),
         }
     }
 
@@ -210,8 +210,8 @@ impl Hitbox {
             ) => {
                 let width = width.abs() / 2.;
                 let height = height.abs() / 2.;
-                let aabb_center = (pos2 + a_lpos);
-                let circle_center = (pos1 + c_lpos);
+                let aabb_center = pos2 + a_lpos;
+                let circle_center = pos1 + c_lpos;
                 let mut ca = aabb_center - circle_center;
                 if ca != zero() {
                     ca = ca.normalize();
@@ -419,7 +419,7 @@ impl Hitbox {
                     direction: v2,
                 },
                 pos2,
-            ) => match line_line_intersection_point(&(pos1 + p1), &v1, &(pos2 + p2), &v2) {
+            ) => match line_line_intersection_point(pos1 + p1, v1, pos2 + p2, v2) {
                 Ok(_) => true,
                 Err(LineIntersectError::Infinite) => true,
                 Err(LineIntersectError::NoCollision) => false,
@@ -429,7 +429,7 @@ impl Hitbox {
                 let a2 = pos1 + a2;
                 let b1 = pos2 + b1;
                 let b2 = pos2 + b2;
-                match line_line_intersection_point(&a1, &(a2 - a1), &b1, &(b2 - b1)) {
+                match line_line_intersection_point(a1, a2 - a1, b1, b2 - b1) {
                     Ok(p) => {
                         p.x >= a1.x.min(a2.x)
                             && p.x <= a1.x.max(a2.x)
@@ -473,10 +473,10 @@ pub enum LineIntersectError {
 }
 
 pub fn line_line_intersection_point(
-    p1: &Point<f32>,
-    v1: &Vector<f32>,
-    p2: &Point<f32>,
-    v2: &Vector<f32>,
+    p1: Point<f32>,
+    v1: Vector<f32>,
+    p2: Point<f32>,
+    v2: Vector<f32>,
 ) -> Result<Point<f32>, LineIntersectError> {
     let denominator_det = (v1.x * (-v2.y)) - ((-v2.x) * v1.y);
     let numerator_det = ((p2.x - p1.x) * (-v2.y)) - ((-v2.x) * (p2.y - p1.y));
