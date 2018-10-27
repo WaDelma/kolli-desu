@@ -327,11 +327,11 @@ fn lines_intersecting() {
     let p2 = Point::new(1., -1.);
     let v2 = Vector::new(-1., 1.);
     assert_eq!(
-        line_line_intersection_point(&p1, &v1, &p2, &v2),
+        line_line_intersection_point(p1, v1, p2, v2),
         Ok(Point::new(0., 0.))
     );
     assert_eq!(
-        line_line_intersection_point(&p2, &v2, &p1, &v1),
+        line_line_intersection_point(p2, v2, p1, v1),
         Ok(Point::new(0., 0.))
     );
     let line1 = Hitbox::line(p1.coords, v1);
@@ -345,11 +345,11 @@ fn lines_intersecting_weird() {
     let v1 = Vector::new(1., 1.);
     let p2 = Point::new(1., -1.);
     let v2 = Vector::new(-2.8459832, 2.87654942);
-    match line_line_intersection_point(&p1, &v1, &p2, &v2) {
+    match line_line_intersection_point(p1, v1, p2, v2) {
         Ok(_) => {}
         _ => panic!("lines didn't intersect even thought they should"),
     }
-    match line_line_intersection_point(&p2, &v2, &p1, &v1) {
+    match line_line_intersection_point(p2, v2, p1, v1) {
         Ok(_) => {}
         _ => panic!("lines didn't intersect even thought they should"),
     }
@@ -364,11 +364,11 @@ fn lines_not_intersecting() {
     let v1 = Vector::new(1., 1.);
     let p2 = Point::new(-1., 1.);
     assert_eq!(
-        line_line_intersection_point(&p1, &v1, &p2, &v1),
+        line_line_intersection_point(p1, v1, p2, v1),
         Err(LineIntersectError::NoCollision)
     );
     assert_eq!(
-        line_line_intersection_point(&p2, &v1, &p1, &v1),
+        line_line_intersection_point(p2, v1, p1, v1),
         Err(LineIntersectError::NoCollision)
     );
     let line1 = Hitbox::line(p1.coords, v1.clone());
@@ -383,11 +383,11 @@ fn lines_equal() {
     let p2 = Point::new(2., 2.);
     let v2 = Vector::new(3., 3.);
     assert_eq!(
-        line_line_intersection_point(&p1, &v1, &p2, &v2),
+        line_line_intersection_point(p1, v1, p2, v2),
         Err(LineIntersectError::Infinite)
     );
     assert_eq!(
-        line_line_intersection_point(&p2, &v2, &p1, &v1),
+        line_line_intersection_point(p2, v2, p1, v1),
         Err(LineIntersectError::Infinite)
     );
     let line1 = Hitbox::line(p1.coords, v1);

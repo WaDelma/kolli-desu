@@ -38,7 +38,6 @@ pub enum Hitbox {
         center: Vector<f32>,
         radius: f32,
     },
-    ///First vector denotes the center of the AABB and the second vector denotes the dimensions(width, height) of the AABB
     Aabb(AABB),
     Rectangle {
         from: Vector<f32>,
@@ -158,6 +157,39 @@ impl Hitbox {
             Line{..} => panic!("A line does not have a center."),
             LineSegment {from, to} => Point::from_coordinates(from + (to - from)/2.),
             Dot {displacement} => Point::from_coordinates(*displacement),
+        }
+    }
+
+    // TODO: Investigate the possibilities of optimising this by using a mutable `Vec` as parameter
+    pub fn collision_points<'a>(
+        (hitbox1, pos1): (&'a Hitbox, Point<f32>),
+        (hitbox2, pos2): (&'a Hitbox, Point<f32>),
+    ) -> Vec<(Point<f32>, Point<f32>)> {
+        use self::Hitbox::*;
+        match (hitbox1, pos1, hitbox2, pos2) {
+            (
+                Circle {
+                    center: a_lpos,
+                    radius: a_radius,
+                },
+                pos1,
+                Circle {
+                    center: b_lpos,
+                    radius: b_radius,
+                },
+                pos2,
+            ) => {
+                // let a_center = pos1 + a_lpos;
+                // let b_center = pos2 + b_lpos;
+
+                // let a_to_b = (b_center - a_center).normalize();
+                // let a_side = a_to_b * a_radius;
+                // let b_side = -a_to_b * b_radius;
+                //let a_side =
+                //let b_side =
+                unimplemented!()
+            },
+            _ => unimplemented!(),
         }
     }
 
