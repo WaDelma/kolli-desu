@@ -1,17 +1,20 @@
 extern crate alga;
 extern crate nalgebra as na;
 
-use std::fmt::Debug;
+/*use std::fmt::Debug;
 use std::ops::Neg;
 
 use alga::linear::Transformation;
 
-use na::{dot, zero, Rotation2};
+use na::{dot, zero, Rotation2};*/
+
+pub mod gjk;
 
 pub type Vector<T> = na::Vector2<T>;
 
 pub type Point<T> = na::Point2<T>;
 
+/*
 pub trait Perp {
     fn perpendicular(&self) -> Self;
 }
@@ -530,3 +533,4 @@ fn point_in_aabb(point: Point<f32>, (center, width, height): (Point<f32>, f32, f
         && point.y >= (center.y - height)
         && point.y <= (center.y + height)
 }
+*/
