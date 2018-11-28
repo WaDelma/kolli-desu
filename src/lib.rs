@@ -9,6 +9,7 @@ use alga::linear::Transformation;
 use na::{dot, zero, Rotation2};*/
 
 pub mod gjk;
+pub mod shapes;
 
 pub type Vector<T> = na::Vector2<T>;
 

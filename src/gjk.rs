@@ -1,42 +1,13 @@
 use {Point, Vector};
+use shapes::Shape;
 
-#[test]
-fn test() {
-    assert!(collides(
-        Circle { center: Vector::new(1., 0.), radius: 1.1},
-        Circle { center: Vector::new(-1., 0.), radius: 1.1}
-    ));
-    assert!(!collides(
-        Circle { center: Vector::new(-1., 0.), radius: 0.9},
-        Circle { center: Vector::new(1., 0.), radius: 0.9}
-    ));
-}
-
-pub struct Circle {
-    center: Vector<f32>,
-    radius: f32,
-}
-
-impl Shape for Circle {
-    fn start(&self) -> Vector<f32> {
-        self.center
-    }
-    fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
-        self.center + dir.normalize() * self.radius
-    }
-}
-
-pub trait Shape {
-    fn start(&self) -> Vector<f32>;
-    fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32>;
-}
-
-fn support(shape1: &impl Shape, shape2: &impl Shape, dir: Vector<f32>) -> Vector<f32> {
-  let p1 = shape1.farthest_in_dir(dir);
-  let p2 = shape2.farthest_in_dir(-dir);
+fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, Point<f32>), dir: Vector<f32>) -> Vector<f32> {
+  let p1 = a_pos + a.farthest_in_dir(dir);
+  let p2 = b_pos + b.farthest_in_dir(-dir);
   p1 - p2
 }
 
+#[derive(Debug)]
 enum Simplex {
     Point(Vector<f32>),
     Line(Vector<f32>, Vector<f32>),
@@ -61,12 +32,13 @@ impl Simplex {
     }
 }
 
-pub fn collides(a: impl Shape, b: impl Shape) -> bool {
-    let mut cur = a.start();
-    let mut simplex = Simplex::Point(support(&a, &b, cur));
+pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
+    let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
+    let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
     loop {
-        simplex.add(support(&a, &b, cur));
+        simplex.add(support(a, b, cur));
+        println!("{:?}", simplex);
         if simplex.last().dot(&cur) <= 0. {
             return false;
         } else if contains(&mut simplex, &mut cur) {

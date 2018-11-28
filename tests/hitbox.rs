@@ -1,34 +1,95 @@
-// extern crate kolli_desu;
-// extern crate nalgebra;
+extern crate kolli_desu;
+extern crate nalgebra;
 
 // use kolli_desu::Hitbox;
 // use kolli_desu::Perp;
 // use kolli_desu::{line_line_intersection_point, LineIntersectError};
-// use kolli_desu::{Point, Vector};
+use std::fmt::Debug;
 
-// fn zero() -> Point<f32> {
-//     Point::from_coordinates(::nalgebra::zero())
-// }
+use nalgebra::Isometry2;
 
-// fn assert_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
-//     let lamppa = |pos| {
-//         assert!(Hitbox::collides((hitbox1, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox1, hitbox2, pos);
-//         assert!(Hitbox::collides((hitbox2, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox2, hitbox1, pos);
-//         assert!(Hitbox::collides((hitbox1, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox1, hitbox1, pos);
-//         assert!(Hitbox::collides((hitbox2, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox2, hitbox2, pos);
-//     };
-//     lamppa(zero());
-//     lamppa(Point::new(1000., 1000.));
-// }
+use kolli_desu::{Point, Vector};
+use kolli_desu::gjk::{collides};
+use kolli_desu::shapes::{Circle, Aabb, Shape};
 
-// fn assert_not_collides(hitbox1: &Hitbox, hitbox2: &Hitbox) {
-//     let lamppa = |pos| {
-//         assert!(!Hitbox::collides((hitbox1, pos), (hitbox2, pos)), "{:?} != {:?}, {}", hitbox1, hitbox2, pos);
-//         assert!(!Hitbox::collides((hitbox2, pos), (hitbox1, pos)), "{:?} != {:?}, {}", hitbox2, hitbox1, pos);
-//     };
-//     lamppa(zero());
-//     lamppa(Point::new(1000., 1000.));
-// }
+const TAU: f32 = 2. * ::std::f32::consts::PI;
+
+fn zero() -> Point<f32> {
+    Point::from_coordinates(::nalgebra::zero())
+}
+
+fn assert_collides<S1, S2>(hitbox1: &S1, hitbox2: &S2) 
+    where
+        S1: Debug+Shape,
+        S2: Debug+Shape,
+{
+    let lamppa = |pos| {
+        assert!(collides((hitbox1, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox1, hitbox2, pos);
+        assert!(collides((hitbox2, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox2, hitbox1, pos);
+        assert!(collides((hitbox1, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox1, hitbox1, pos);
+        assert!(collides((hitbox2, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox2, hitbox2, pos);
+    };
+    lamppa(zero());
+    lamppa(Point::new(1000., 1000.));
+}
+
+fn assert_not_collides<S1, S2>(hitbox1: &S1, hitbox2: &S2)
+    where
+        S1: Debug+Shape,
+        S2: Debug+Shape,
+{
+    let lamppa = |pos| {
+        assert!(!collides((hitbox1, pos), (hitbox2, pos)), "{:?} != {:?}, {}", hitbox1, hitbox2, pos);
+        assert!(!collides((hitbox2, pos), (hitbox1, pos)), "{:?} != {:?}, {}", hitbox2, hitbox1, pos);
+    };
+    lamppa(zero());
+    lamppa(Point::new(1000., 1000.));
+}
+
+#[test]
+fn circle_circle_collides_multi() {
+    let circle = Circle::new(Vector::new(0., 0.), 0.55);
+    let mut other = Circle::new(Vector::new(1., 0.), 0.5);
+    let steps = 360;
+    for _ in 0..steps {
+        other.center = Isometry2::new(Vector::new(0., 0.), TAU / steps as f32) * other.center;
+        assert_collides(&circle, &other);
+    }
+}
+
+#[test]
+fn circle_circle_doesnt_collide_multi() {
+    let circle = Circle::new(Vector::new(0., 0.), 0.45);
+    let mut other = Circle::new(Vector::new(1., 0.), 0.5);
+    let steps = 360;
+    for _ in 0..steps {
+        other.center = Isometry2::new(Vector::new(0., 0.), TAU / steps as f32) * other.center;
+        assert_not_collides(&circle, &other);
+    }
+}
+
+
+#[test]
+fn circle_aabb_collides_multi() {
+    let aabb = Aabb::new(Vector::new(-0.5, -0.5), Vector::new(0.5, 0.5));
+    let mut other = Circle::new(Vector::new(1., 0.), 0.55);
+    let steps = 360;
+    for _ in 0..steps {
+        other.center = Isometry2::new(Vector::new(0., 0.), TAU / steps as f32) * other.center;
+        assert_collides(&aabb, &other);
+    }
+}
+
+#[test]
+fn circlee_aabb_doesnt_collide_multi() {
+    let aabb = Aabb::new(Vector::new(-0.5, -0.5), Vector::new(0.5, 0.5));
+    let mut other = Circle::new(Vector::new(1., 0.), 0.28);
+    let steps = 360;
+    for _ in 0..steps {
+        other.center = Isometry2::new(Vector::new(0., 0.), TAU / steps as f32) * other.center;
+        assert_not_collides(&aabb, &other);
+    }
+}
 
 // #[test]
 // fn enclosing_aabb_with_circle() {
@@ -59,14 +120,30 @@
 //     assert_eq!(Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.), enclosing_aabb);
 // }
 
+#[test]
+fn circle_circle_offset_non_collision() {
+    let circle = Circle::new(Vector::new(0., 0.), 1.);
+    assert!(!collides(
+        (&circle, zero()),
+        (&circle, Point::new(1000., 1000.))
+    ));
+}
+
 // #[test]
-// fn circle_circle_offset_non_collision() {
-//     let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
-//     assert!(!Hitbox::collides(
-//         (&circle, zero()),
-//         (&circle, Point::new(1000., 1000.))
+// fn circle_circle_collision() {
+//     assert!(collides(
+//         (Circle::new(Vector::new(1., 0.), 1.1), Point::new(0., 0.)),
+//         (Circle::new(Vector::new(-1., 0.), 1.1), Point::new(0., 0.)),
 //     ));
 // }
+
+#[test]
+fn circle_circle_non_collision() {
+    assert!(!collides(
+        (&Circle::new(Vector::new(-1., 0.), 0.9), Point::new(0., 0.)),
+        (&Circle::new(Vector::new(1., 0.), 0.9), Point::new(0., 0.)),
+    ));
+}
 
 // #[test]
 // fn circle_aabb_offset_non_collision() {
@@ -123,7 +200,7 @@
 //         (&point, Point::new(1000., 1000.))
 //     ));
 //     assert!(!Hitbox::collides(
-//         (&point, zero()),
+//         (&point, zero()),otation2
 //         (&rectangle, Point::new(1000., 1000.))
 //     ));
 // }
@@ -140,12 +217,6 @@
 //         (&ls2, zero()),
 //         (&ls1, Point::new(1000., 1000.))
 //     ));
-// }
-
-// #[test]
-// fn circle_center() {
-//     let circle = Hitbox::circle(Vector::new(1.,1.), 1.);
-//     assert_eq!(circle.center(), Point::new(1., 1.));
 // }
 
 // #[test]
@@ -172,17 +243,17 @@
 //     assert_eq!(dot.center(), Point::new(100., 100.));
 // }
 
-// #[test]
-// fn circle_circle_collision() {
-//     let circle1 = Hitbox::circle(Vector::new(0., 0.), 1.);
-//     let circle2 = Hitbox::circle(Vector::new(1.9, 0.), 1.);
-//     let circle3 = Hitbox::circle(Vector::new(2., 2.), 1.);
+#[test]
+fn circle_circle_collision() {
+    let circle1 = Circle::new(Vector::new(0., 0.), 1.);
+    let circle2 = Circle::new(Vector::new(1.9, 0.), 1.);
+    let circle3 = Circle::new(Vector::new(2., 2.), 1.);
 
-//     assert_collides(&circle1, &circle2);
+    assert_collides(&circle1, &circle2);
 
-//     assert_not_collides(&circle1, &circle3);
-//     assert_not_collides(&circle2, &circle3);
-// }
+    assert_not_collides(&circle1, &circle3);
+    assert_not_collides(&circle2, &circle3);
+}
 
 // #[test]
 // fn aabb_aabb_collision() {
