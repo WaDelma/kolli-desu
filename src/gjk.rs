@@ -1,3 +1,5 @@
+use na::zero;
+
 use {Point, Vector};
 use shapes::Shape;
 
@@ -34,11 +36,13 @@ impl Simplex {
 
 pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
+    if cur == zero() {
+        return true
+    }
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
     loop {
         simplex.add(support(a, b, cur));
-        println!("{:?}", simplex);
         if simplex.last().dot(&cur) <= 0. {
             return false;
         } else if contains(&mut simplex, &mut cur) {

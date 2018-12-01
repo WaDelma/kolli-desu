@@ -63,3 +63,43 @@ impl Shape for Aabb {
         )
     }
 }
+
+
+#[derive(Debug)]
+pub struct ConvexPolygon {
+    points: Vec<Point<f32>>,
+}
+
+impl Shape for ConvexPolygon {
+    fn start(&self) -> Vector<f32> {
+        unimplemented!()
+    }
+    fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
+        let mut max_point = self.points.first().unwrap().coords;
+        let mut max_dot = max_point.dot(&dir);
+        let right = self.points[1].coords;
+        let left = self.points[self.points.len()-1].coords;
+        let left_dot = left.dot(&dir);
+        let right_dot = right.dot(&dir);
+        if max_dot >= left_dot && max_dot >= right_dot {
+            return max_point;
+        }
+        let mut find_largest_dot = |points: &mut dyn Iterator<Item = &Point<f32>>| {
+            for p in points.into_iter() {
+                let dot = p.coords.dot(&dir);
+                if dot >= max_dot {
+                    max_dot = dot;
+                    max_point = p.coords;
+                } else {
+                    return max_point;
+                }
+            }
+            max_point
+        };
+        if left_dot >= right_dot {
+            find_largest_dot(&mut {self.points[2..].iter()})
+        } else {
+            find_largest_dot(&mut {self.points.iter().rev().skip(1)})
+        }
+    }
+}

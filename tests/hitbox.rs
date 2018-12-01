@@ -145,37 +145,37 @@ fn circle_circle_non_collision() {
     ));
 }
 
-// #[test]
-// fn circle_aabb_offset_non_collision() {
-//     let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     assert!(!Hitbox::collides(
-//         (&circle, zero()),
-//         (&aabb, Point::new(1000., 1000.))
-//     ));
-//     assert!(!Hitbox::collides(
-//         (&circle, Point::new(1000., 1000.)),
-//         (&aabb, zero())
-//     ));
-// }
+#[test]
+fn circle_aabb_offset_non_collision() {
+    let circle = Circle::new(Vector::new(0., 0.), 1.);
+    let aabb = Aabb::new(Vector::new(-0.5, -0.5), Vector::new(0.5, 0.5));
+    assert!(!collides(
+        (&circle, zero()),
+        (&aabb, Point::new(1000., 1000.))
+    ));
+    assert!(!collides(
+        (&circle, Point::new(1000., 1000.)),
+        (&aabb, zero())
+    ));
+}
 
-// #[test]
-// fn aabb_aabb_offset_non_collision() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     assert!(!Hitbox::collides(
-//         (&aabb, zero()),
-//         (&aabb, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn aabb_aabb_offset_non_collision() {
+    let aabb = Aabb::new(Vector::new(-0.5, -0.5), Vector::new(0.5, 0.5));
+    assert!(!collides(
+        (&aabb, zero()),
+        (&aabb, Point::new(1000., 1000.))
+    ));
+}
 
-// #[test]
-// fn rectangle_rectangle_offset_non_collision() {
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 0.), 1.);
-//     assert!(!Hitbox::collides(
-//         (&rectangle, zero()),
-//         (&rectangle, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn rectangle_rectangle_offset_non_collision() {
+    let rectangle = Rectangle::new(Vector::new(0., 0.), Vector::new(1., 0.), 1.);
+    assert!(!collides(
+        (&rectangle, zero()),
+        (&rectangle, Point::new(1000., 1000.))
+    ));
+}
 
 // #[test]
 // fn aabb_rectangle_offset_non_collision() {
