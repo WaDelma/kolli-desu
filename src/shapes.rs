@@ -5,14 +5,23 @@ pub trait Shape {
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32>;
 }
 
+impl Shape for Point<f32> {
+    fn start(&self) -> Vector<f32> {
+        self.coords
+    }
+    fn farthest_in_dir(&self, _dir: Vector<f32>) -> Vector<f32> {
+        self.coords
+    }
+}
+
 #[derive(Debug)]
 pub struct Circle {
-    pub center: Vector<f32>,
+    pub center: Point<f32>,
     pub radius: f32,
 }
 
 impl Circle {
-    pub fn new(center: Vector<f32>, radius: f32) -> Self {
+    pub fn new(center: Point<f32>, radius: f32) -> Self {
         Circle {
             center,
             radius,
@@ -22,21 +31,21 @@ impl Circle {
 
 impl Shape for Circle {
     fn start(&self) -> Vector<f32> {
-        self.center
+        self.center.coords
     }
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
-        self.center + dir.normalize() * self.radius
+        self.center.coords + dir.normalize() * self.radius
     }
 }
 
 #[derive(Debug)]
 pub struct Aabb {
-    pub from: Vector<f32>,
-    pub to: Vector<f32>,
+    pub from: Point<f32>,
+    pub to: Point<f32>,
 }
 
 impl Aabb {
-    pub fn new(from: Vector<f32>, to: Vector<f32>) -> Self {
+    pub fn new(from: Point<f32>, to: Point<f32>) -> Self {
         Aabb {
             from,
             to,
@@ -46,7 +55,7 @@ impl Aabb {
 
 impl Shape for Aabb {
     fn start(&self) -> Vector<f32> {
-        self.from + (self.to - self.from) / 2.
+        self.from.coords + (self.to.coords - self.from.coords) / 2.
     }
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
         Vector::new(
