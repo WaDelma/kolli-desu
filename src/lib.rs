@@ -1,5 +1,4 @@
-extern crate alga;
-extern crate nalgebra as na;
+use nalgebra as na;
 
 use std::fmt::Debug;
 use std::ops::Neg;
