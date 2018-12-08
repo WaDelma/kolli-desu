@@ -147,7 +147,7 @@ fn circle_circle_non_collision() {
 
 #[test]
 fn circle_point_collision() {
-    let circle = Circle::new(Point::new(0., 0.), 0.5);
+    let _circle = Circle::new(Point::new(0., 0.), 0.5);
 }
 
 #[test]

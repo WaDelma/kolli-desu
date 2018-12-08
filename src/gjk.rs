@@ -1,7 +1,7 @@
-use na::zero;
+use crate::na::zero;
 
-use {Point, Vector};
-use shapes::Shape;
+use crate::{Point, Vector};
+use crate::shapes::Shape;
 
 fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, Point<f32>), dir: Vector<f32>) -> Vector<f32> {
   let p1 = a_pos + a.farthest_in_dir(dir);

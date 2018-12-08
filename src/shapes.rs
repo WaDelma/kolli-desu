@@ -1,4 +1,4 @@
-use {Point, Vector};
+use crate::{Point, Vector};
 
 pub trait Shape {
     fn start(&self) -> Vector<f32>;
