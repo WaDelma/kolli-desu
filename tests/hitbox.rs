@@ -10,7 +10,7 @@ use nalgebra::Isometry2;
 
 use kolli_desu::{Point, Vector};
 use kolli_desu::gjk::{collides};
-use kolli_desu::shapes::{Circle, Aabb, Shape};
+use kolli_desu::shapes::{Circle, ConvexPolygon, Aabb, Shape};
 
 const TAU: f32 = 2. * ::std::f32::consts::PI;
 
@@ -129,13 +129,13 @@ fn circle_circle_offset_non_collision() {
     ));
 }
 
-// #[test]
-// fn circle_circle_collision() {
-//     assert!(collides(
-//         (Circle::new(Vector::new(1., 0.), 1.1), Point::new(0., 0.)),
-//         (Circle::new(Vector::new(-1., 0.), 1.1), Point::new(0., 0.)),
-//     ));
-// }
+#[test]
+fn circle_circle_collision() {
+    assert!(collides(
+        (&Circle::new(Point::new(1., 0.), 1.1), Point::new(0., 0.)),
+        (&Circle::new(Point::new(-1., 0.), 1.1), Point::new(0., 0.)),
+    ));
+}
 
 #[test]
 fn circle_circle_non_collision() {
@@ -173,28 +173,28 @@ fn aabb_aabb_offset_non_collision() {
     ));
 }
 
-// #[test]
-// fn rectangle_rectangle_offset_non_collision() {
-//     let rectangle = Rectangle::new(Vector::new(0., 0.), Vector::new(1., 0.), 1.);
-//     assert!(!collides(
-//         (&rectangle, zero()),
-//         (&rectangle, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn rectangle_rectangle_offset_non_collision() {
+    let rectangle = ConvexPolygon::new(vec![Point::new(0., 0.), Point::new(1., 0.), Point::new(1., 1.), Point::new(0., 1.)]);
+    assert!(!collides(
+        (&rectangle, zero()),
+        (&rectangle, Point::new(1000., 1000.))
+    ));
+}
 
-// #[test]
-// fn aabb_rectangle_offset_non_collision() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 1.);
-//     assert!(!Hitbox::collides(
-//         (&rectangle, zero()),
-//         (&aabb, Point::new(1000., 1000.))
-//     ));
-//     assert!(!Hitbox::collides(
-//         (&aabb, zero()),
-//         (&rectangle, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn aabb_rectangle_offset_non_collision() {
+    let aabb = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 1.);
+    assert!(!collides(
+        (&rectangle, zero()),
+        (&aabb, Point::new(1000., 1000.))
+    ));
+    assert!(!collides(
+        (&aabb, zero()),
+        (&rectangle, Point::new(1000., 1000.))
+    ));
+}
 
 // #[test]
 // fn rectangle_dot_offset_non_collision() {
@@ -249,7 +249,7 @@ fn aabb_aabb_offset_non_collision() {
 // }
 
 #[test]
-fn circle_circle_collision() {
+fn circle_circle_collision2() {
     let circle1 = Circle::new(Point::new(0., 0.), 1.);
     let circle2 = Circle::new(Point::new(1.9, 0.), 1.);
     let circle3 = Circle::new(Point::new(2., 2.), 1.);

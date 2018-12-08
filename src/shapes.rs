@@ -1,4 +1,4 @@
-use crate::{Point, Vector};
+use crate::{Point, Vector, Perp};
 
 pub trait Shape {
     fn start(&self) -> Vector<f32>;
@@ -79,9 +79,24 @@ pub struct ConvexPolygon {
     points: Vec<Point<f32>>,
 }
 
+impl ConvexPolygon {
+    pub fn new(points: Vec<Point<f32>>) -> Self {
+        ConvexPolygon {
+            points,
+        }
+    }
+
+    pub fn new_rectangle(from: Point<f32>, to: Point<f32>, thickness: f32) -> Self {
+        let perp = (to - from).perpendicular().normalize() * thickness;
+        let fp = from + perp;
+        let tp = to + perp;
+        ConvexPolygon::new(vec![from, to, tp, fp])
+    }
+}
+
 impl Shape for ConvexPolygon {
     fn start(&self) -> Vector<f32> {
-        unimplemented!()
+        self.points[0].coords
     }
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
         let mut max_point = self.points.first().unwrap().coords;

@@ -1,12 +1,12 @@
 extern crate alga;
 extern crate nalgebra as na;
 
-/*use std::fmt::Debug;
+use std::fmt::Debug;
 use std::ops::Neg;
 
-use alga::linear::Transformation;
+// use alga::linear::Transformation;
 
-use na::{dot, zero, Rotation2};*/
+// use na::{dot, zero, Rotation2};
 
 pub mod gjk;
 pub mod shapes;
@@ -15,7 +15,6 @@ pub type Vector<T> = na::Vector2<T>;
 
 pub type Point<T> = na::Point2<T>;
 
-/*
 pub trait Perp {
     fn perpendicular(&self) -> Self;
 }
@@ -28,6 +27,8 @@ where
         Vector::new(-self.y, self.x)
     }
 }
+
+/*
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AABB {
