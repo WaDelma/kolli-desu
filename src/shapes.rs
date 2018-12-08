@@ -44,6 +44,8 @@ pub struct Aabb {
     pub to: Point<f32>,
 }
 
+//TODO: Figure out if it makes any sense to have a separate AABB struct since we have a ConvexPolygon struct 
+//      and the GJK implementation doesn't seem to benefit from axis alignment.
 impl Aabb {
     pub fn new(from: Point<f32>, to: Point<f32>) -> Self {
         Aabb {
@@ -91,6 +93,10 @@ impl ConvexPolygon {
         let fp = from + perp;
         let tp = to + perp;
         ConvexPolygon::new(vec![from, to, tp, fp])
+    }
+
+    pub fn new_line_segment(from: Point<f32>, to: Point<f32>) -> Self {
+        ConvexPolygon::new(vec![from, to])
     }
 }
 

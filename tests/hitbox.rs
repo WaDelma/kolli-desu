@@ -196,33 +196,33 @@ fn aabb_rectangle_offset_non_collision() {
     ));
 }
 
-// #[test]
-// fn rectangle_dot_offset_non_collision() {
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 1.);
-//     let point = Hitbox::dot(Vector::new(0., 0.5));
-//     assert!(!Hitbox::collides(
-//         (&rectangle, zero()),
-//         (&point, Point::new(1000., 1000.))
-//     ));
-//     assert!(!Hitbox::collides(
-//         (&point, zero()),otation2
-//         (&rectangle, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn rectangle_dot_offset_non_collision() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 1.);
+    let point = Point::new(0., 0.5);
+    assert!(!collides(
+        (&rectangle, zero()),
+        (&point, Point::new(1000., 1000.))
+    ));
+    assert!(!collides(
+        (&point, zero()),
+        (&rectangle, Point::new(1000., 1000.))
+    ));
+}
 
-// #[test]
-// fn line_segment_line_segment_non_collision() {
-//     let ls1 = Hitbox::line_segment(Vector::new(-1., -1.), Vector::new(1., 1.));
-//     let ls2 = Hitbox::line_segment(Vector::new(1., -1.), Vector::new(-1., 1.));
-//     assert!(!Hitbox::collides(
-//         (&ls1, zero()),
-//         (&ls2, Point::new(1000., 1000.))
-//     ));
-//     assert!(!Hitbox::collides(
-//         (&ls2, zero()),
-//         (&ls1, Point::new(1000., 1000.))
-//     ));
-// }
+#[test]
+fn line_segment_line_segment_non_collision() {
+    let ls1 = ConvexPolygon::new_line_segment(Point::new(-1., -1.), Point::new(1., 1.));
+    let ls2 = ConvexPolygon::new_line_segment(Point::new(1., -1.), Point::new(-1., 1.));
+    assert!(!collides(
+        (&ls1, zero()),
+        (&ls2, Point::new(1000., 1000.))
+    ));
+    assert!(!collides(
+        (&ls2, zero()),
+        (&ls1, Point::new(1000., 1000.))
+    ));
+}
 
 // #[test]
 // fn aabb_center() {
@@ -260,21 +260,21 @@ fn circle_circle_collision2() {
     assert_not_collides(&circle2, &circle3);
 }
 
-// #[test]
-// fn aabb_aabb_collision() {
-//     let aabb1 = Hitbox::aabb(Vector::new(0.5, 0.5), 1., 1.);
-//     let aabb2 = Hitbox::aabb(Vector::new(-0.5, -0.5), 1., 1.);
-//     let aabb3 = Hitbox::aabb(Vector::new(1.6, 2.6), 1., 2.);
-//     let aabb4 = Hitbox::aabb(Vector::new(50., 50.), 100., 150.);
+#[test]
+fn aabb_aabb_collision() {
+    let aabb1 = Aabb::new(Point::new(0.0, 0.0), Point::new(1., 1.));
+    let aabb2 = Aabb::new(Point::new(-1., -1.), Point::new(0.1, 0.1));
+    let aabb3 = Aabb::new(Point::new(1.1, 1.6), Point::new(2.1, 3.6));
+    let aabb4 = Aabb::new(Point::new(0., -25.), Point::new(100., 125.));
 
-//     assert_collides(&aabb1, &aabb2);
-//     assert_collides(&aabb1, &aabb4);
-//     assert_collides(&aabb2, &aabb4);
-//     assert_collides(&aabb3, &aabb4);
+    assert_collides(&aabb1, &aabb2);
+    assert_collides(&aabb1, &aabb4);
+    assert_collides(&aabb2, &aabb4);
+    assert_collides(&aabb3, &aabb4);
 
-//     assert_not_collides(&aabb1, &aabb3);
-//     assert_not_collides(&aabb2, &aabb3);
-// }
+    assert_not_collides(&aabb1, &aabb3);
+    assert_not_collides(&aabb2, &aabb3);
+}
 
 // #[test]
 // fn crossing_aabb_aabb_collision() {

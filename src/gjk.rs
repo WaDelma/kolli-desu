@@ -36,12 +36,9 @@ impl Simplex {
 
 pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
-    if cur == zero() {
-        return true
-    }
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
-    loop {
+    while cur != zero() {
         simplex.add(support(a, b, cur));
         if simplex.last().dot(&cur) <= 0. {
             return false;
@@ -49,6 +46,7 @@ pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> b
             return true;
         }
     }
+    true
 }
 
 fn contains(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
@@ -81,5 +79,5 @@ fn contains(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
 
 /// a x (b x c)
 fn triple_product(a: Vector<f32>, b: Vector<f32>, c: Vector<f32>) -> Vector<f32> {
-    b * a.dot(&c) - c * a.dot(&b)
+    b * c.dot(&a) - a * c.dot(&b)
 }
