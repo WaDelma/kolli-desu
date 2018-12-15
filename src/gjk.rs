@@ -40,6 +40,7 @@ pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> b
     cur = -cur;
     while cur != zero() {
         simplex.add(support(a, b, cur));
+        println!("{:?}", simplex);
         if simplex.last().dot(&cur) <= 0. {
             return false;
         } else if contains(&mut simplex, &mut cur) {

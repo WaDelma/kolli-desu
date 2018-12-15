@@ -126,7 +126,7 @@ impl Shape for ConvexPolygon {
             }
             max_point
         };
-        if left_dot >= right_dot {
+        if right_dot >= left_dot {
             find_largest_dot(&mut {self.points[2..].iter()})
         } else {
             find_largest_dot(&mut {self.points.iter().rev().skip(1)})
