@@ -78,7 +78,7 @@ impl Shape for Aabb {
 
 #[derive(Debug)]
 pub struct ConvexPolygon {
-    points: Vec<Point<f32>>,
+    pub points: Vec<Point<f32>>,
 }
 
 impl ConvexPolygon {
@@ -98,6 +98,16 @@ impl ConvexPolygon {
     pub fn new_line_segment(from: Point<f32>, to: Point<f32>) -> Self {
         ConvexPolygon::new(vec![from, to])
     }
+
+    fn dot(&self, index: isize, dir: Vector<f32>) -> f32 {
+        if index == -1 {
+            self.points[self.points.len() - 1]
+        } else if index as usize == self.points.len() {
+            self.points[0]
+        } else {
+            self.points[index as usize]
+        }.coords.dot(&dir)
+    }
 }
 
 impl Shape for ConvexPolygon {
@@ -105,31 +115,43 @@ impl Shape for ConvexPolygon {
         self.points[0].coords
     }
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
-        let mut max_point = self.points.first().unwrap().coords;
-        let mut max_dot = max_point.dot(&dir);
-        let right = self.points[1].coords;
-        let left = self.points[self.points.len()-1].coords;
-        let left_dot = left.dot(&dir);
-        let right_dot = right.dot(&dir);
-        if max_dot >= left_dot && max_dot >= right_dot {
-            return max_point;
+        let size = self.points.len() as isize;
+
+        let mut index = 0;
+        let mut cur = self.dot(index, dir);
+        // Negative cur means that were looking from opposite direction
+        if cur < 0. {
+            index = size / 2;
+            cur = self.dot(index, dir);
         }
-        let mut find_largest_dot = |points: &mut dyn Iterator<Item = &Point<f32>>| {
-            for p in points.into_iter() {
-                let dot = p.coords.dot(&dir);
-                if dot >= max_dot {
-                    max_dot = dot;
-                    max_point = p.coords;
-                } else {
-                    return max_point;
-                }
-            }
-            max_point
-        };
-        if right_dot >= left_dot {
-            find_largest_dot(&mut {self.points[2..].iter()})
+
+        let left = self.dot(index - 1, dir);
+        let right = self.dot(index + 1, dir);
+        if left <= cur && cur >= right {
+            return self.points[index as usize].coords;
+        }
+
+        let step = if left > right {
+            cur = left;
+            -1
         } else {
-            find_largest_dot(&mut {self.points.iter().rev().skip(1)})
+            cur = right;
+            1
+        };
+        index += step;
+        loop {
+            if index == -1 {
+                index = size - 1;
+            }
+            if index == size {
+                index = 0;
+            }
+            let next = self.dot(index + step, dir);
+            if cur >= next {
+                return self.points[index as usize].coords;
+            }
+            cur = next;
+            index += step;
         }
     }
 }

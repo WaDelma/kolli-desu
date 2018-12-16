@@ -1,6 +1,3 @@
-
-
-
 // use kolli_desu::Hitbox;
 // use kolli_desu::Perp;
 // use kolli_desu::{line_line_intersection_point, LineIntersectError};
@@ -320,7 +317,7 @@ fn rectangle_circle_really_distant() {
 #[test]
 fn rectangle_circle_right_side_touching() {
     let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = Circle::new(Point::new(2., 1.), 1.0003);
+    let circle = Circle::new(Point::new(2., 1.), 1.1);
 
     assert_collides(&rectangle, &circle);
 }

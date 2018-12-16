@@ -2,55 +2,34 @@ use crate::na::zero;
 
 use crate::{Point, Vector};
 use crate::shapes::Shape;
+use crate::simplex::Simplex;
 
-fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, Point<f32>), dir: Vector<f32>) -> Vector<f32> {
+pub fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, Point<f32>), dir: Vector<f32>) -> Vector<f32> {
   let p1 = a_pos + a.farthest_in_dir(dir);
   let p2 = b_pos + b.farthest_in_dir(-dir);
   p1 - p2
 }
 
-#[derive(Debug)]
-enum Simplex {
-    Point(Vector<f32>),
-    Line(Vector<f32>, Vector<f32>),
-    Triangle(Vector<f32>, Vector<f32>, Vector<f32>),
-}
-
-impl Simplex {
-    fn add(&mut self, p: Vector<f32>) {
-        use self::Simplex::*;
-        *self = match self {
-            Point(p2) => Line(*p2, p),
-            Line(p2, p3) => Triangle(*p2, *p3, p),
-            _ => panic!(),
-        }
-    }
-
-    fn last(&self) -> &Vector<f32> {
-        use self::Simplex::*;
-        match self {
-            Point(p) | Line(_, p) | Triangle(_, _, p) => p,
-        }
-    }
-}
-
 pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
+    collides_internal(a, b).0
+}
+
+pub fn collides_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> (bool, Simplex) {
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
     while cur != zero() {
         simplex.add(support(a, b, cur));
-        println!("{:?}", simplex);
         if simplex.last().dot(&cur) <= 0. {
-            return false;
-        } else if contains(&mut simplex, &mut cur) {
-            return true;
+            return (false, simplex);
+        } else if expand(&mut simplex, &mut cur) {
+            return (true, simplex);
         }
     }
-    true
+    (true, simplex)
 }
 
-fn contains(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
+fn expand(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
     match *simplex {
         Simplex::Triangle(b, c, a) => {
             let ao = -a;
