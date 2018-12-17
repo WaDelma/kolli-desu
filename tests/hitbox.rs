@@ -317,82 +317,82 @@ fn rectangle_circle_really_distant() {
 #[test]
 fn rectangle_circle_right_side_touching() {
     let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
-    let circle = Circle::new(Point::new(2., 1.), 1.1);
+    let circle = Circle::new(Point::new(2., 1.), 1.0001);
 
     assert_collides(&rectangle, &circle);
 }
 
-// #[test]
-// fn rectangle_circle_left_side_touching() {
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 2f32.sqrt());
-//     let circle = Hitbox::circle(Vector::new(-2., 1.), 1.0001);
+#[test]
+fn rectangle_circle_left_side_touching() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let circle = Circle::new(Point::new(-2., 1.), 1.0001);
 
-//     assert_collides(&rectangle, &circle);
-// }
+    assert_collides(&rectangle, &circle);
+}
 
-// #[test]
-// fn rectangle_circle_up_side_touching() {
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 2f32.sqrt());
-//     let circle = Hitbox::circle(Vector::new(0., 3.), 1.0001);
+#[test]
+fn rectangle_circle_up_side_touching() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let circle = Circle::new(Point::new(0., 3.), 1.0001);
 
-//     assert_collides(&rectangle, &circle);
-// }
+    assert_collides(&rectangle, &circle);
+}
 
-// #[test]
-// fn rectangle_circle_lower_side_touching() {
-//     let rectangle = Hitbox::rectangle(Vector::new(0., 0.), Vector::new(1., 1.), 2f32.sqrt());
-//     let circle = Hitbox::circle(Vector::new(0., -1.), 1.);
+#[test]
+fn rectangle_circle_lower_side_touching() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let circle = Circle::new(Point::new(0., -1.), 1.0001);
 
-//     assert_collides(&rectangle, &circle);
-// }
+    assert_collides(&rectangle, &circle);
+}
 
-// #[test]
-// fn rectangle_circle_close_to_side() {
-//     let rectangle = Hitbox::rectangle(Vector::new(1., -1.), Vector::new(2., -1.), 2.);
-//     let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
+#[test]
+fn rectangle_circle_close_to_side() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(1., -1.), Point::new(2., -1.), 2.);
+    let circle = Circle::new(Point::new(0., 0.), 1.);
 
-//     assert_collides(&rectangle, &circle);
-// }
+    assert_collides(&rectangle, &circle);
+}
 
-// #[test]
-// fn rectangle_circle_close_to_side_not_touching() {
-//     let rectangle = Hitbox::rectangle(Vector::new(1.001, -1.), Vector::new(2., -1.), 2.);
-//     let circle = Hitbox::circle(Vector::new(0., 0.), 1.);
+#[test]
+fn rectangle_circle_close_to_side_not_touching() {
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(1.001, -1.), Point::new(2., -1.), 2.);
+    let circle = Circle::new(Point::new(0., 0.), 1.);
 
-//     assert_not_collides(&rectangle, &circle);
-// }
+    assert_not_collides(&rectangle, &circle);
+}
 
-// #[test]
-// fn rectangle_aabb_partial_overlap() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     let rectangle = Hitbox::rectangle(Vector::new(-1., -1.), Vector::new(0.5, 0.), 1.);
+#[test]
+fn rectangle_aabb_partial_overlap() {
+    let aabb = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(0.5, 0.), 1.);
 
-//     assert_collides(&rectangle, &aabb);
-// }
+    assert_collides(&rectangle, &aabb);
+}
 
-// #[test]
-// fn rectangle_aabb_left() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     let rectangle = Hitbox::rectangle(Vector::new(-1., -1.), Vector::new(-0.4, 0.), 1.);
+#[test]
+fn rectangle_aabb_left() {
+    let aabb = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(-0.6, 0.), 1.);
 
-//     assert_not_collides(&rectangle, &aabb);
-// }
+    assert_not_collides(&rectangle, &aabb);
+}
 
-// #[test]
-// fn rectangle_aabb_above_left() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     let rectangle = Hitbox::rectangle(Vector::new(-1., -1.), Vector::new(0., 3.), 1.);
+#[test]
+fn rectangle_aabb_above_left() {
+    let aabb = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(0., 3.), 1.);
 
-//     assert_not_collides(&rectangle, &aabb);
-// }
+    assert_not_collides(&rectangle, &aabb);
+}
 
-// #[test]
-// fn rectangle_aabb_below() {
-//     let aabb = Hitbox::aabb(Vector::new(0., 0.), 1., 1.);
-//     let rectangle = Hitbox::rectangle(Vector::new(-4., -4.), Vector::new(1., -4.), 0.2);
+#[test]
+fn rectangle_aabb_below() {
+    let aabb = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-4., -4.), Point::new(1., -4.), 0.2);
 
-//     assert_not_collides(&rectangle, &aabb);
-// }
+    assert_not_collides(&rectangle, &aabb);
+}
 
 // #[test]
 // fn lines_intersecting() {
@@ -574,25 +574,25 @@ fn rectangle_circle_right_side_touching() {
 //     assert_collides(&rectangle, &Hitbox::dot(d1));
 // }
 
-// #[test]
-// fn rectangle_rectangle_cross_collides() {
-//     let rectangle1 = Hitbox::rectangle(Vector::new(2., -2.), Vector::new(-2., 2.), 0.2);
-//     let rectangle2 = Hitbox::rectangle(Vector::new(2., 2.), Vector::new(-2., -2.), 0.2);
+#[test]
+fn rectangle_rectangle_cross_collides() {
+    let rectangle1 = ConvexPolygon::new_rectangle(Point::new(2., -2.), Point::new(-2., 2.), 0.2);
+    let rectangle2 = ConvexPolygon::new_rectangle(Point::new(2., 2.), Point::new(-2., -2.), 0.2);
 
-//     assert_collides(&rectangle1, &rectangle2);
-// }
+    assert_collides(&rectangle1, &rectangle2);
+}
 
-// #[test]
-// fn rectangle_rectangle_corner_cross_collides() {
-//     let rectangle1 = Hitbox::rectangle(Vector::new(-1., 0.), Vector::new(1., 0.), 2.);
+#[test]
+fn rectangle_rectangle_corner_cross_collides() {
+    let rectangle1 = ConvexPolygon::new_rectangle(Point::new(-1., 0.), Point::new(1., 0.), 2.);
 
-//     let rectangle2 = Hitbox::rectangle(Vector::new(-1.3, 1.), Vector::new(0., 2.3), 0.2);
-//     let rectangle3 = Hitbox::rectangle(Vector::new(0., 2.3), Vector::new(1.3, 1.), 0.2);
-//     let rectangle4 = Hitbox::rectangle(Vector::new(0., -0.3), Vector::new(1.3, 1.), 0.2);
-//     let rectangle5 = Hitbox::rectangle(Vector::new(-1.3, 1.), Vector::new(0., -0.3), 0.2);
+    let rectangle2 = ConvexPolygon::new_rectangle(Point::new(-1.3, 1.), Point::new(0., 2.3), 0.2);
+    let rectangle3 = ConvexPolygon::new_rectangle(Point::new(0., 2.3), Point::new(1.3, 1.), 0.2);
+    let rectangle4 = ConvexPolygon::new_rectangle(Point::new(0., -0.3), Point::new(1.3, 1.), 0.2);
+    let rectangle5 = ConvexPolygon::new_rectangle(Point::new(-1.3, 1.), Point::new(0., -0.3), 0.2);
 
-//     assert_collides(&rectangle1, &rectangle2);
-//     assert_collides(&rectangle1, &rectangle3);
-//     assert_collides(&rectangle1, &rectangle4);
-//     assert_collides(&rectangle1, &rectangle5);
-// }
+    assert_collides(&rectangle1, &rectangle2);
+    assert_collides(&rectangle1, &rectangle3);
+    assert_collides(&rectangle1, &rectangle4);
+    assert_collides(&rectangle1, &rectangle5);
+}
