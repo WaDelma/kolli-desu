@@ -19,8 +19,9 @@ pub fn collides_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f3
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
     while cur != zero() {
-        simplex.add(support(a, b, cur));
-        if simplex.last().dot(&cur) <= 0. {
+        let support = support(a, b, cur);
+        simplex.add(support);
+        if support.dot(&cur) < 0. {
             return (false, simplex);
         } else if expand(&mut simplex, &mut cur) {
             return (true, simplex);

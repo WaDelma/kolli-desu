@@ -12,10 +12,12 @@ fn main() {
     // let shape2 = ConvexPolygon::new_line_segment(Point::new(1., -1.), Point::new(-1., 1.));
     // let shape1 = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
     // let shape2 = Circle::new(Point::new(0.1, 0.1), 1.);
-    let shape1 = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
-    let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(-0.4, 0.), 1.);
+    // let shape1 = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
+    // let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(-0.4, 0.), 1.);
     // let shape1 = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     // let shape2 = Circle::new(Point::new(2., 1.), 1.1);
+    let shape1 = Point::new(1., -1.);
+    let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(1., -1.), 2.);
 
     let mut imgbuf = image::ImageBuffer::from_pixel(imgx, imgy, image::Rgb([25, 25, 25]));
 

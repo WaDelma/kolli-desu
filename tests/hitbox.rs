@@ -1,6 +1,7 @@
 // use kolli_desu::Hitbox;
 // use kolli_desu::Perp;
 // use kolli_desu::{line_line_intersection_point, LineIntersectError};
+use kolli_desu::Perp;
 use std::fmt::Debug;
 
 use nalgebra::Isometry2;
@@ -468,111 +469,111 @@ fn rectangle_aabb_below() {
 //     let line2 = Hitbox::line(p2.coords, v2);
 //     assert_collides(&line1, &line2);
 // }
-// #[test]
-// fn line_segment_intersection() {
-//     let ls1 = Hitbox::line_segment(Vector::new(-1., 0.), Vector::new(1., 0.));
-//     let ls2 = Hitbox::line_segment(Vector::new(0., -1.), Vector::new(0., 1.));
-//     let ls1_2 = Hitbox::line_segment(Vector::new(1., 0.), Vector::new(-1., 0.));
-//     let ls2_2 = Hitbox::line_segment(Vector::new(0., 1.), Vector::new(0., -1.));
+#[test]
+fn line_segment_intersection() {
+    let ls1 = ConvexPolygon::new_line_segment(Point::new(-1., 0.), Point::new(1., 0.));
+    let ls2 = ConvexPolygon::new_line_segment(Point::new(0., -1.), Point::new(0., 1.));
+    let ls1_2 = ConvexPolygon::new_line_segment(Point::new(1., 0.), Point::new(-1., 0.));
+    let ls2_2 = ConvexPolygon::new_line_segment(Point::new(0., 1.), Point::new(0., -1.));
 
-//     assert_collides(&ls1, &ls2);
-//     assert_collides(&ls1, &ls1_2);
-//     assert_collides(&ls1, &ls2_2);
-//     assert_collides(&ls2, &ls1_2);
-//     assert_collides(&ls2, &ls2_2);
-//     assert_collides(&ls1_2, &ls2_2);
-// }
+    assert_collides(&ls1, &ls2);
+    assert_collides(&ls1, &ls1_2);
+    assert_collides(&ls1, &ls2_2);
+    assert_collides(&ls2, &ls1_2);
+    assert_collides(&ls2, &ls2_2);
+    assert_collides(&ls1_2, &ls2_2);
+}
 
-// #[test]
-// fn line_segment_no_intersections_above_and_below() {
-//     let ls1 = Hitbox::line_segment(Vector::new(-1., 0.25), Vector::new(1., 0.));
-//     let ls2 = Hitbox::line_segment(Vector::new(1., 0.), Vector::new(-1., 0.25));
-//     let lsabove = Hitbox::line_segment(Vector::new(0., 2.), Vector::new(0., 1.));
-//     let lsbelow = Hitbox::line_segment(Vector::new(0.5, -2.), Vector::new(0., -1.));
-//     let lsabove_2 = Hitbox::line_segment(Vector::new(0., 1.), Vector::new(0., 2.));
-//     let lsbelow_2 = Hitbox::line_segment(Vector::new(0., -1.), Vector::new(0.5, -2.));
+#[test]
+fn line_segment_no_intersections_above_and_below() {
+    let ls1 = ConvexPolygon::new_line_segment(Point::new(-1., 0.25), Point::new(1., 0.));
+    let ls2 = ConvexPolygon::new_line_segment(Point::new(1., 0.), Point::new(-1., 0.25));
+    let lsabove = ConvexPolygon::new_line_segment(Point::new(0., 2.), Point::new(0., 1.));
+    let lsbelow = ConvexPolygon::new_line_segment(Point::new(0.5, -2.), Point::new(0., -1.));
+    let lsabove_2 = ConvexPolygon::new_line_segment(Point::new(0., 1.), Point::new(0., 2.));
+    let lsbelow_2 = ConvexPolygon::new_line_segment(Point::new(0., -1.), Point::new(0.5, -2.));
 
-//     assert_not_collides(&ls1, &lsabove);
-//     assert_not_collides(&ls1, &lsbelow);
-//     assert_not_collides(&ls1, &lsabove_2);
-//     assert_not_collides(&ls1, &lsbelow_2);
+    assert_not_collides(&ls1, &lsabove);
+    assert_not_collides(&ls1, &lsbelow);
+    assert_not_collides(&ls1, &lsabove_2);
+    assert_not_collides(&ls1, &lsbelow_2);
 
-//     assert_not_collides(&ls2, &lsabove);
-//     assert_not_collides(&ls2, &lsbelow);
-//     assert_not_collides(&ls2, &lsabove_2);
-//     assert_not_collides(&ls2, &lsbelow_2);
-// }
+    assert_not_collides(&ls2, &lsabove);
+    assert_not_collides(&ls2, &lsbelow);
+    assert_not_collides(&ls2, &lsabove_2);
+    assert_not_collides(&ls2, &lsbelow_2);
+}
 
-// #[test]
-// fn line_segment_no_intersections_left_and_right() {
-//     let ls1 = Hitbox::line_segment(Vector::new(-1., 0.25), Vector::new(1., 0.));
-//     let ls2 = Hitbox::line_segment(Vector::new(1., 0.), Vector::new(-1., 0.25));
-//     let lsright = Hitbox::line_segment(Vector::new(2., 0.), Vector::new(1.5, 0.25));
-//     let lsleft = Hitbox::line_segment(Vector::new(-2., 0.), Vector::new(-1.5, 0.25));
-//     let lsright_2 = Hitbox::line_segment(Vector::new(1.5, 0.25), Vector::new(2., 0.));
-//     let lsleft_2 = Hitbox::line_segment(Vector::new(-1.5, 0.25), Vector::new(-2., 0.));
+#[test]
+fn line_segment_no_intersections_left_and_right() {
+    let ls1 = ConvexPolygon::new_line_segment(Point::new(-1., 0.25), Point::new(1., 0.));
+    let ls2 = ConvexPolygon::new_line_segment(Point::new(1., 0.), Point::new(-1., 0.25));
+    let lsright = ConvexPolygon::new_line_segment(Point::new(2., 0.), Point::new(1.5, 0.25));
+    let lsleft = ConvexPolygon::new_line_segment(Point::new(-2., 0.), Point::new(-1.5, 0.25));
+    let lsright_2 = ConvexPolygon::new_line_segment(Point::new(1.5, 0.25), Point::new(2., 0.));
+    let lsleft_2 = ConvexPolygon::new_line_segment(Point::new(-1.5, 0.25), Point::new(-2., 0.));
 
-//     assert_not_collides(&ls1, &lsright);
-//     assert_not_collides(&ls1, &lsleft);
-//     assert_not_collides(&ls1, &lsright_2);
-//     assert_not_collides(&ls1, &lsleft_2);
+    assert_not_collides(&ls1, &lsright);
+    assert_not_collides(&ls1, &lsleft);
+    assert_not_collides(&ls1, &lsright_2);
+    assert_not_collides(&ls1, &lsleft_2);
 
-//     assert_not_collides(&ls2, &lsright);
-//     assert_not_collides(&ls2, &lsleft);
-//     assert_not_collides(&ls2, &lsright_2);
-//     assert_not_collides(&ls2, &lsleft_2);
-// }
+    assert_not_collides(&ls2, &lsright);
+    assert_not_collides(&ls2, &lsleft);
+    assert_not_collides(&ls2, &lsright_2);
+    assert_not_collides(&ls2, &lsleft_2);
+}
 
-// #[test]
-// fn rectangle_point_collisions() {
-//     let point1 = Hitbox::dot(Vector::new(0., 0.));
-//     let point2 = Hitbox::dot(Vector::new(1., 1.));
-//     let point3 = Hitbox::dot(Vector::new(-1., -1.));
-//     let point4 = Hitbox::dot(Vector::new(1., -1.));
-//     let point5 = Hitbox::dot(Vector::new(-1., 1.));
+#[test]
+fn rectangle_point_collisions() {
+    let point1 = Point::new(0., 0.);
+    let point2 = Point::new(1., 1.);
+    let point3 = Point::new(-1., -1.);
+    let point4 = Point::new(1., -1.);
+    let point5 = Point::new(-1., 1.);
 
-//     let rectangle = Hitbox::rectangle(Vector::new(-1., -1.), Vector::new(1., -1.), 2.);
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(1., -1.), 2.);
 
-//     assert_collides(&rectangle, &point1);
-//     assert_collides(&rectangle, &point2);
-//     assert_collides(&rectangle, &point3);
-//     assert_collides(&rectangle, &point4);
-//     assert_collides(&rectangle, &point5);
-// }
+    assert_collides(&rectangle, &point1);
+    assert_collides(&rectangle, &point2);
+    assert_collides(&rectangle, &point3);
+    assert_collides(&rectangle, &point4);
+    assert_collides(&rectangle, &point5);
+}
 
-// #[test]
-// fn rectangle_point_no_collisions() {
-//     let point1 = Hitbox::dot(Vector::new(1., 0.));
-//     let point2 = Hitbox::dot(Vector::new(-1., 0.));
-//     let point3 = Hitbox::dot(Vector::new(0., 1.));
-//     let point4 = Hitbox::dot(Vector::new(0., -1.));
+#[test]
+fn rectangle_point_no_collisions() {
+    let point1 = Point::new(1., 0.);
+    let point2 = Point::new(-1., 0.);
+    let point3 = Point::new(0., 1.);
+    let point4 = Point::new(0., -1.);
 
-//     let rectangle = Hitbox::rectangle(Vector::new(-0.5, -0.5), Vector::new(0.5, -0.5), 1.);
+    let rectangle = ConvexPolygon::new_rectangle(Point::new(-0.5, -0.5), Point::new(0.5, -0.5), 1.);
 
-//     assert_not_collides(&rectangle, &point1);
-//     assert_not_collides(&rectangle, &point2);
-//     assert_not_collides(&rectangle, &point3);
-//     assert_not_collides(&rectangle, &point4);
-// }
-// #[test]
-// fn rectangle_collides_with_its_points() {
-//     let spos = Vector::new(-1., -1.);
-//     let epos = Vector::new(-0.5, 0.);
-//     let thickness = 1.;
+    assert_not_collides(&rectangle, &point1);
+    assert_not_collides(&rectangle, &point2);
+    assert_not_collides(&rectangle, &point3);
+    assert_not_collides(&rectangle, &point4);
+}
+#[test]
+fn rectangle_collides_with_its_points() {
+    let spos = Point::new(-1., -1.);
+    let epos = Point::new(-0.5, 0.);
+    let thickness = 1.;
 
-//     let rectangle = Hitbox::rectangle(spos, epos, thickness);
+    let rectangle = ConvexPolygon::new_rectangle(spos, epos, thickness);
 
-//     let perp = (epos - spos).perpendicular().normalize() * thickness;
-//     let a1 = spos;
-//     let b1 = a1 + perp;
-//     let c1 = epos;
-//     let d1 = c1 + perp;
+    let perp = (epos - spos).perpendicular().normalize() * thickness;
+    let a1 = spos;
+    let b1 = a1 + perp;
+    let c1 = epos;
+    let d1 = c1 + perp;
 
-//     assert_collides(&rectangle, &Hitbox::dot(a1));
-//     assert_collides(&rectangle, &Hitbox::dot(b1));
-//     assert_collides(&rectangle, &Hitbox::dot(c1));
-//     assert_collides(&rectangle, &Hitbox::dot(d1));
-// }
+    assert_collides(&rectangle, &a1);
+    assert_collides(&rectangle, &b1);
+    assert_collides(&rectangle, &c1);
+    assert_collides(&rectangle, &d1);
+}
 
 #[test]
 fn rectangle_rectangle_cross_collides() {
