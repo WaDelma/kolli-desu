@@ -1,35 +1,52 @@
 use std::path::Path;
 
 use kolli_desu::{Point, Vector, shapes::{Circle, ConvexPolygon, Aabb, Shape}};
+use nalgebra::Isometry2;
 
 const TAU: f32 = 2. * ::std::f32::consts::PI;
 
 fn main() {
-    let imgx = 2000;//1920;
-    let imgy = 2000;//1080;
+    let imgx = 5000;//1920;
+    let imgy = 5000;//1080;
 
     // let shape1 = ConvexPolygon::new_line_segment(Point::new(-1., -1.), Point::new(1., 1.));
     // let shape2 = ConvexPolygon::new_line_segment(Point::new(1., -1.), Point::new(-1., 1.));
+
     // let shape1 = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
     // let shape2 = Circle::new(Point::new(0.1, 0.1), 1.);
+
     // let shape1 = Aabb::new(Point::new(-0.5, -0.5), Point::new(0.5, 0.5));
     // let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(-0.4, 0.), 1.);
+
     // let shape1 = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     // let shape2 = Circle::new(Point::new(2., 1.), 1.1);
-    let shape1 = Point::new(1., -1.);
-    let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(1., -1.), 2.);
+
+    // let shape1 = Point::new(1., -1.);
+    // let shape2 = ConvexPolygon::new_rectangle(Point::new(-1., -1.), Point::new(1., -1.), 2.);
+
+    // let shape1 = Circle::new(Point::new(-0.75, 0.), 1.);
+    // let shape2 = Circle::new(Point::new(0.75, 0.), 1.);
+
+    // let shape1 = Circle::new(Point::new(0., 0.), 0.5);
+    // let shape2 = Circle::new(Point::new(0., 0.), 0.5);
+
+    let shape1 = Circle::new(Point::new(0., 0.), 0.55);
+    let mut shape2 = Circle::new(Point::new(1., 0.), 0.5);
+    shape2.center = Isometry2::new(Vector::new(0., 0.), 45. * TAU / 360.) * shape2.center;
 
     let mut imgbuf = image::ImageBuffer::from_pixel(imgx, imgy, image::Rgb([25, 25, 25]));
 
-    let scale = 200.;
-    let transform = |v: Vector<_>| {
-        Vector::new(
-            imgx as f32 / 2. + v.x * scale,
-            imgy as f32 / 2. - v.y * scale
-        )
-    };
+    let scale = 1000.;
+    let transform = |v: Vector<_>| Vector::new(
+        imgx as f32 / 2. + v.x * scale,
+        imgy as f32 / 2. - v.y * scale
+    );
 
     let (_, simplex) = ::kolli_desu::gjk::collides_internal((&shape1, Point::new(0., 0.)), (&shape2, Point::new(0., 0.)));
+    println!("{:?}", simplex);
+    let (p, d, simplex) = ::kolli_desu::epa::solve_internal((&shape1, Point::new(0., 0.)), (&shape2, Point::new(0., 0.)), simplex);
+    println!("{:?}", simplex);
+    println!("penetration: {}, depth: {}", p, d);
 
     let points = simplex.into_iter().map(transform).collect::<Vec<_>>();
     let mut colors = vec![
@@ -40,6 +57,7 @@ fn main() {
     let steps = 1000;
     for (from, to) in points.iter().zip(points.iter().skip(1).chain(points.first())) {
         let color = colors.pop().unwrap();
+        colors.insert(0, color);
         for n in 0..steps {
             let f = n as f32 / steps as f32;
             let p = from * f + to * (1. - f);

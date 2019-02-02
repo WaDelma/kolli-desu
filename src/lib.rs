@@ -4,6 +4,7 @@ use std::fmt::Debug;
 use std::ops::Neg;
 
 pub mod gjk;
+pub mod epa;
 pub mod simplex;
 pub mod shapes;
 

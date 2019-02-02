@@ -1,5 +1,10 @@
 use crate::Vector;
 
+#[derive(Copy, Clone)]
+pub enum Winding {
+    Left, Right,
+}
+
 #[derive(Debug)]
 pub enum Simplex {
     Point(Vector<f32>),
@@ -8,6 +13,20 @@ pub enum Simplex {
 }
 
 impl Simplex {
+    pub fn winding(&self) -> Winding {
+        use self::{Simplex::*, Winding::*};
+        if let Triangle(v1, v2, _) = self {
+            let dot = v1.dot(&v2);
+            if dot < 0. {
+                Right
+            } else {
+                Left
+            }
+        } else {
+            panic!("Winding is only defined for the triangle.");
+        }
+    }
+
     pub fn add(&mut self, p: Vector<f32>) {
         use self::Simplex::*;
         *self = match self {

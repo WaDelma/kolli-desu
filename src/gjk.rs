@@ -10,12 +10,20 @@ pub fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, 
   p1 - p2
 }
 
+/// a x (b x c)
+pub fn triple_product(a: Vector<f32>, b: Vector<f32>, c: Vector<f32>) -> Vector<f32> {
+    b * c.dot(&a) - a * c.dot(&b)
+}
+
 pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
     collides_internal(a, b).0
 }
 
 pub fn collides_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> (bool, Simplex) {
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
+    if cur == zero() {
+        cur = Vector::new(1., 0.);
+    }
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
     while cur != zero() {
@@ -56,9 +64,4 @@ fn expand(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
         _ => unreachable!(),
     }
     return false;
-}
-
-/// a x (b x c)
-fn triple_product(a: Vector<f32>, b: Vector<f32>, c: Vector<f32>) -> Vector<f32> {
-    b * c.dot(&a) - a * c.dot(&b)
 }
