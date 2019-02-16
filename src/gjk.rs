@@ -4,7 +4,11 @@ use crate::{Point, Vector};
 use crate::shapes::Shape;
 use crate::simplex::Simplex;
 
-pub fn support((a, a_pos): (&impl Shape, Point<f32>), (b, b_pos): (&impl Shape, Point<f32>), dir: Vector<f32>) -> Vector<f32> {
+pub fn support<S1, S2>((a, a_pos): (&S1, Point<f32>), (b, b_pos): (&S2, Point<f32>), dir: Vector<f32>) -> Vector<f32> 
+where 
+    S1: Shape + ?Sized,
+    S2: Shape + ?Sized,
+{
   let p1 = a_pos + a.farthest_in_dir(dir);
   let p2 = b_pos + b.farthest_in_dir(-dir);
   p1 - p2
@@ -15,11 +19,19 @@ pub fn triple_product(a: Vector<f32>, b: Vector<f32>, c: Vector<f32>) -> Vector<
     b * c.dot(&a) - a * c.dot(&b)
 }
 
-pub fn collides(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> bool {
+pub fn collides<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> bool 
+where 
+    S1: Shape + ?Sized,
+    S2: Shape + ?Sized,
+{
     collides_internal(a, b).0
 }
 
-pub fn collides_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)) -> (bool, Simplex) {
+pub fn collides_internal<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> (bool, Simplex) 
+where 
+    S1: Shape + ?Sized,
+    S2: Shape + ?Sized,
+{
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
     if cur == zero() {
         cur = Vector::new(1., 0.);
