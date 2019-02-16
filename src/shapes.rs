@@ -14,6 +14,17 @@ impl Shape for Point<f32> {
     }
 }
 
+impl<T> Shape for Box<T> 
+where T: Shape
+{
+    fn start(&self) -> Vector<f32> {
+        T::start(self)
+    }
+    fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
+        T::farthest_in_dir(self, dir)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Circle {
     pub center: Point<f32>,
