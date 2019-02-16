@@ -14,7 +14,7 @@ impl Shape for Point<f32> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Circle {
     pub center: Point<f32>,
     pub radius: f32,
@@ -38,7 +38,7 @@ impl Shape for Circle {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Aabb {
     pub from: Point<f32>,
     pub to: Point<f32>,
@@ -76,7 +76,7 @@ impl Shape for Aabb {
 }
 
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ConvexPolygon {
     pub points: Vec<Point<f32>>,
 }
