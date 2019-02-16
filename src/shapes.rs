@@ -15,7 +15,7 @@ impl Shape for Point<f32> {
 }
 
 impl<T> Shape for Box<T> 
-where T: Shape
+where T: Shape + ?Sized
 {
     fn start(&self) -> Vector<f32> {
         T::start(self)
