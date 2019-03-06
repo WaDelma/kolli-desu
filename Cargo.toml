@@ -8,5 +8,5 @@ edition = "2018"
 members = ["visualise", "."]
 
 [dependencies]
-nalgebra = "0.14.1"
+nalgebra = "0.17.2"
 alga = "0.5.2"
