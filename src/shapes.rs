@@ -25,6 +25,17 @@ where T: Shape + ?Sized
     }
 }
 
+impl<'a, T> Shape for &'a T
+where T: Shape + ?Sized
+{
+    fn start(&self) -> Vector<f32> {
+        T::start(self)
+    }
+    fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
+        T::farthest_in_dir(self, dir)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Circle {
     pub center: Point<f32>,
