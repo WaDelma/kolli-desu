@@ -1,9 +1,13 @@
 use crate::{Point, Vector, Perp};
 
-pub trait Shape {
+use mopa::{Any, mopafy};
+
+pub trait Shape: Any {
     fn start(&self) -> Vector<f32>;
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32>;
 }
+
+mopafy!(Shape);
 
 impl Shape for Point<f32> {
     fn start(&self) -> Vector<f32> {
@@ -25,7 +29,7 @@ where T: Shape + ?Sized
     }
 }
 
-impl<'a, T> Shape for &'a T
+impl<T> Shape for &'static T
 where T: Shape + ?Sized
 {
     fn start(&self) -> Vector<f32> {

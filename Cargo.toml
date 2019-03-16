@@ -10,3 +10,4 @@ members = ["visualise", "."]
 [dependencies]
 nalgebra = "0.17.2"
 alga = "0.5.2"
+mopa = "0.2.2"
