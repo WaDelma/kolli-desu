@@ -1,34 +1,25 @@
 use crate::na::zero;
+use crate::shapes::support;
 
-use crate::{Point, Vector};
 use crate::shapes::Shape;
 use crate::simplex::Simplex;
-
-pub fn support<S1, S2>((a, a_pos): (&S1, Point<f32>), (b, b_pos): (&S2, Point<f32>), dir: Vector<f32>) -> Vector<f32> 
-where 
-    S1: Shape + ?Sized,
-    S2: Shape + ?Sized,
-{
-  let p1 = a_pos + a.farthest_in_dir(dir);
-  let p2 = b_pos + b.farthest_in_dir(-dir);
-  p1 - p2
-}
+use crate::{Point, Vector};
 
 /// a x (b x c)
 pub fn triple_product(a: Vector<f32>, b: Vector<f32>, c: Vector<f32>) -> Vector<f32> {
     b * c.dot(&a) - a * c.dot(&b)
 }
 
-pub fn collides<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> bool 
-where 
+pub fn collides<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> bool
+where
     S1: Shape + ?Sized,
     S2: Shape + ?Sized,
 {
     collides_internal(a, b).0
 }
 
-pub fn collides_internal<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> (bool, Simplex) 
-where 
+pub fn collides_internal<S1, S2>(a: (&S1, Point<f32>), b: (&S2, Point<f32>)) -> (bool, Simplex)
+where
     S1: Shape + ?Sized,
     S2: Shape + ?Sized,
 {
@@ -67,7 +58,7 @@ fn expand(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
             } else {
                 return true;
             }
-        },
+        }
         Simplex::Line(b, a) => {
             let ao = -a;
             let ab = b - a;
@@ -75,5 +66,5 @@ fn expand(simplex: &mut Simplex, cur: &mut Vector<f32>) -> bool {
         }
         _ => unreachable!(),
     }
-    return false;
+    false
 }

@@ -6,9 +6,9 @@ use std::fmt::Debug;
 
 use nalgebra::Isometry2;
 
+use kolli_desu::gjk::collides;
+use kolli_desu::shapes::{Aabb, Circle, ConvexPolygon, Shape};
 use kolli_desu::{Point, Vector};
-use kolli_desu::gjk::{collides};
-use kolli_desu::shapes::{Circle, ConvexPolygon, Aabb, Shape};
 
 const TAU: f32 = 2. * ::std::f32::consts::PI;
 
@@ -16,29 +16,65 @@ fn zero() -> Point<f32> {
     Point::from_coordinates(::nalgebra::zero())
 }
 
-fn assert_collides<S1, S2>(hitbox1: &S1, hitbox2: &S2) 
-    where
-        S1: Debug+Shape,
-        S2: Debug+Shape,
+fn assert_collides<S1, S2>(hitbox1: &S1, hitbox2: &S2)
+where
+    S1: Debug + Shape,
+    S2: Debug + Shape,
 {
     let lamppa = |pos| {
-        assert!(collides((hitbox1, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox1, hitbox2, pos);
-        assert!(collides((hitbox2, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox2, hitbox1, pos);
-        assert!(collides((hitbox1, pos), (hitbox1, pos)), "{:?} == {:?}, {}", hitbox1, hitbox1, pos);
-        assert!(collides((hitbox2, pos), (hitbox2, pos)), "{:?} == {:?}, {}", hitbox2, hitbox2, pos);
+        assert!(
+            collides((hitbox1, pos), (hitbox2, pos)),
+            "{:?} == {:?}, {}",
+            hitbox1,
+            hitbox2,
+            pos
+        );
+        assert!(
+            collides((hitbox2, pos), (hitbox1, pos)),
+            "{:?} == {:?}, {}",
+            hitbox2,
+            hitbox1,
+            pos
+        );
+        assert!(
+            collides((hitbox1, pos), (hitbox1, pos)),
+            "{:?} == {:?}, {}",
+            hitbox1,
+            hitbox1,
+            pos
+        );
+        assert!(
+            collides((hitbox2, pos), (hitbox2, pos)),
+            "{:?} == {:?}, {}",
+            hitbox2,
+            hitbox2,
+            pos
+        );
     };
     lamppa(zero());
     lamppa(Point::new(1000., 1000.));
 }
 
 fn assert_not_collides<S1, S2>(hitbox1: &S1, hitbox2: &S2)
-    where
-        S1: Debug+Shape,
-        S2: Debug+Shape,
+where
+    S1: Debug + Shape,
+    S2: Debug + Shape,
 {
     let lamppa = |pos| {
-        assert!(!collides((hitbox1, pos), (hitbox2, pos)), "{:?} != {:?}, {}", hitbox1, hitbox2, pos);
-        assert!(!collides((hitbox2, pos), (hitbox1, pos)), "{:?} != {:?}, {}", hitbox2, hitbox1, pos);
+        assert!(
+            !collides((hitbox1, pos), (hitbox2, pos)),
+            "{:?} != {:?}, {}",
+            hitbox1,
+            hitbox2,
+            pos
+        );
+        assert!(
+            !collides((hitbox2, pos), (hitbox1, pos)),
+            "{:?} != {:?}, {}",
+            hitbox2,
+            hitbox1,
+            pos
+        );
     };
     lamppa(zero());
     lamppa(Point::new(1000., 1000.));
@@ -65,7 +101,6 @@ fn circle_circle_doesnt_collide_multi() {
         assert_not_collides(&circle, &other);
     }
 }
-
 
 #[test]
 fn circle_aabb_collides_multi() {
@@ -173,7 +208,12 @@ fn aabb_aabb_offset_non_collision() {
 
 #[test]
 fn rectangle_rectangle_offset_non_collision() {
-    let rectangle = ConvexPolygon::new(vec![Point::new(0., 0.), Point::new(1., 0.), Point::new(1., 1.), Point::new(0., 1.)]);
+    let rectangle = ConvexPolygon::new(vec![
+        Point::new(0., 0.),
+        Point::new(1., 0.),
+        Point::new(1., 1.),
+        Point::new(0., 1.),
+    ]);
     assert!(!collides(
         (&rectangle, zero()),
         (&rectangle, Point::new(1000., 1000.))
@@ -212,14 +252,8 @@ fn rectangle_dot_offset_non_collision() {
 fn line_segment_line_segment_non_collision() {
     let ls1 = ConvexPolygon::new_line_segment(Point::new(-1., -1.), Point::new(1., 1.));
     let ls2 = ConvexPolygon::new_line_segment(Point::new(1., -1.), Point::new(-1., 1.));
-    assert!(!collides(
-        (&ls1, zero()),
-        (&ls2, Point::new(1000., 1000.))
-    ));
-    assert!(!collides(
-        (&ls2, zero()),
-        (&ls1, Point::new(1000., 1000.))
-    ));
+    assert!(!collides((&ls1, zero()), (&ls2, Point::new(1000., 1000.))));
+    assert!(!collides((&ls2, zero()), (&ls1, Point::new(1000., 1000.))));
 }
 
 // #[test]
@@ -299,7 +333,8 @@ fn circle_aabb_collision() {
 
 #[test]
 fn rectangle_circle_inside() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(0.5, 0.5), 0.5);
 
     assert_collides(&rectangle, &circle);
@@ -307,7 +342,8 @@ fn rectangle_circle_inside() {
 
 #[test]
 fn rectangle_circle_really_distant() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(100., 100.), 1.);
 
     assert_not_collides(&rectangle, &circle);
@@ -317,7 +353,8 @@ fn rectangle_circle_really_distant() {
 // tests.
 #[test]
 fn rectangle_circle_right_side_touching() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(2., 1.), 1.0001);
 
     assert_collides(&rectangle, &circle);
@@ -325,7 +362,8 @@ fn rectangle_circle_right_side_touching() {
 
 #[test]
 fn rectangle_circle_left_side_touching() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(-2., 1.), 1.0001);
 
     assert_collides(&rectangle, &circle);
@@ -333,7 +371,8 @@ fn rectangle_circle_left_side_touching() {
 
 #[test]
 fn rectangle_circle_up_side_touching() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(0., 3.), 1.0001);
 
     assert_collides(&rectangle, &circle);
@@ -341,7 +380,8 @@ fn rectangle_circle_up_side_touching() {
 
 #[test]
 fn rectangle_circle_lower_side_touching() {
-    let rectangle = ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
+    let rectangle =
+        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(1., 1.), 2f32.sqrt());
     let circle = Circle::new(Point::new(0., -1.), 1.0001);
 
     assert_collides(&rectangle, &circle);

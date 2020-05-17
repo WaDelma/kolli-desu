@@ -2,10 +2,11 @@ use crate::Vector;
 
 #[derive(Copy, Clone)]
 pub enum Winding {
-    Left, Right,
+    Left,
+    Right,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Simplex {
     Point(Vector<f32>),
     Line(Vector<f32>, Vector<f32>),

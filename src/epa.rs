@@ -1,7 +1,8 @@
-use crate::simplex::Winding;
-use crate::{Vector, Point};
-use crate::simplex::Simplex;
+use crate::shapes::support;
 use crate::shapes::Shape;
+use crate::simplex::Simplex;
+use crate::simplex::Winding;
+use crate::{Point, Vector};
 
 use nalgebra::zero;
 
@@ -13,24 +14,29 @@ struct Edge {
     index: usize,
 }
 
-pub fn solve(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>), simplex: Simplex) -> (Vector<f32>, f32) {
+pub fn solve(
+    a: (&impl Shape, Point<f32>),
+    b: (&impl Shape, Point<f32>),
+    simplex: Simplex,
+) -> (Vector<f32>, f32) {
     let (v, d, _) = solve_internal(a, b, simplex);
     (v, d)
 }
 
-pub fn solve_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>), mut simplex: Simplex) -> (Vector<f32>, f32, Vec<Vector<f32>>) {
-    match simplex {
-        Simplex::Line(from, to) => {
-            let support = crate::gjk::support(a, b, perp(to - from, Winding::Left));
-            simplex.add(support);
-        },
-        _ => {},
+pub fn solve_internal(
+    a: (&impl Shape, Point<f32>),
+    b: (&impl Shape, Point<f32>),
+    mut simplex: Simplex,
+) -> (Vector<f32>, f32, Vec<Vector<f32>>) {
+    if let Simplex::Line(from, to) = simplex {
+        let support = support(a, b, perp(to - from, Winding::Left));
+        simplex.add(support);
     }
     let winding = simplex.winding();
     let mut simplex: Vec<_> = simplex.into_iter().collect();
     loop {
         let edge = find_closest_edge(&simplex, winding);
-        let support = crate::gjk::support(a, b, edge.normal);
+        let support = support(a, b, edge.normal);
         let depth = support.dot(&edge.normal);
         if depth - edge.distance < TOLERANCE {
             return (edge.normal, depth, simplex);
@@ -40,7 +46,7 @@ pub fn solve_internal(a: (&impl Shape, Point<f32>), b: (&impl Shape, Point<f32>)
     }
 }
 
-fn find_closest_edge(simplex: &Vec<Vector<f32>>, winding: Winding) -> Edge {
+fn find_closest_edge(simplex: &[Vector<f32>], winding: Winding) -> Edge {
     let mut closest = Edge {
         distance: ::std::f32::MAX,
         normal: zero(),

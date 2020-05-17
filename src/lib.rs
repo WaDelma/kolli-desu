@@ -3,10 +3,10 @@ use nalgebra as na;
 use std::fmt::Debug;
 use std::ops::Neg;
 
-pub mod gjk;
 pub mod epa;
-pub mod simplex;
+pub mod gjk;
 pub mod shapes;
+pub mod simplex;
 
 pub type Vector<T> = na::Vector2<T>;
 

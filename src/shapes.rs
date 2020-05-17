@@ -1,10 +1,24 @@
-use crate::{Point, Vector, Perp};
+use crate::{Perp, Point, Vector};
 
-use mopa::{Any, mopafy};
+use mopa::{mopafy, Any};
 
 pub trait Shape: Any {
     fn start(&self) -> Vector<f32>;
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32>;
+}
+
+pub fn support<S1, S2>(
+    (a, a_pos): (&S1, Point<f32>),
+    (b, b_pos): (&S2, Point<f32>),
+    dir: Vector<f32>,
+) -> Vector<f32>
+where
+    S1: Shape + ?Sized,
+    S2: Shape + ?Sized,
+{
+    let p1 = a_pos + a.farthest_in_dir(dir);
+    let p2 = b_pos + b.farthest_in_dir(-dir);
+    p1 - p2
 }
 
 mopafy!(Shape);
@@ -18,8 +32,9 @@ impl Shape for Point<f32> {
     }
 }
 
-impl<T> Shape for Box<T> 
-where T: Shape + ?Sized
+impl<T> Shape for Box<T>
+where
+    T: Shape + ?Sized,
 {
     fn start(&self) -> Vector<f32> {
         T::start(self)
@@ -30,7 +45,8 @@ where T: Shape + ?Sized
 }
 
 impl<T> Shape for &'static T
-where T: Shape + ?Sized
+where
+    T: Shape + ?Sized,
 {
     fn start(&self) -> Vector<f32> {
         T::start(self)
@@ -48,10 +64,7 @@ pub struct Circle {
 
 impl Circle {
     pub fn new(center: Point<f32>, radius: f32) -> Self {
-        Circle {
-            center,
-            radius,
-        }
+        Circle { center, radius }
     }
 }
 
@@ -70,14 +83,11 @@ pub struct Aabb {
     pub to: Point<f32>,
 }
 
-//TODO: Figure out if it makes any sense to have a separate AABB struct since we have a ConvexPolygon struct 
+//TODO: Figure out if it makes any sense to have a separate AABB struct since we have a ConvexPolygon struct
 //      and the GJK implementation doesn't seem to benefit from axis alignment.
 impl Aabb {
     pub fn new(from: Point<f32>, to: Point<f32>) -> Self {
-        Aabb {
-            from,
-            to,
-        }
+        Aabb { from, to }
     }
 }
 
@@ -87,20 +97,11 @@ impl Shape for Aabb {
     }
     fn farthest_in_dir(&self, dir: Vector<f32>) -> Vector<f32> {
         Vector::new(
-            if dir.x > 0. {
-                self.to.x
-            } else {
-                self.from.x
-            },
-            if dir.y > 0. {
-                self.to.y
-            } else {
-                self.from.y
-            }
+            if dir.x > 0. { self.to.x } else { self.from.x },
+            if dir.y > 0. { self.to.y } else { self.from.y },
         )
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct ConvexPolygon {
@@ -109,9 +110,7 @@ pub struct ConvexPolygon {
 
 impl ConvexPolygon {
     pub fn new(points: Vec<Point<f32>>) -> Self {
-        ConvexPolygon {
-            points,
-        }
+        ConvexPolygon { points }
     }
 
     pub fn new_rectangle(from: Point<f32>, to: Point<f32>, thickness: f32) -> Self {
@@ -132,7 +131,9 @@ impl ConvexPolygon {
             self.points[0]
         } else {
             self.points[index as usize]
-        }.coords.dot(&dir)
+        }
+        .coords
+        .dot(&dir)
     }
 }
 
