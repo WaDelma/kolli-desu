@@ -24,3 +24,7 @@ where
         Vector::new(-self.y, self.x)
     }
 }
+
+fn det(a: Vector<f32>, b: Vector<f32>, p: Vector<f32>) -> f32 {
+    (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)
+}

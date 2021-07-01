@@ -1,9 +1,18 @@
-use crate::Vector;
+use crate::{det, Vector};
 
 #[derive(Copy, Clone)]
 pub enum Winding {
     Left,
     Right,
+}
+
+impl Winding {
+    pub fn inv(&self) -> Self {
+        match self {
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -16,9 +25,9 @@ pub enum Simplex {
 impl Simplex {
     pub fn winding(&self) -> Winding {
         use self::{Simplex::*, Winding::*};
-        if let Triangle(v1, v2, _) = self {
-            let dot = v1.dot(&v2);
-            if dot < 0. {
+        if let Triangle(a, b, p) = self {
+            let det = det(*a, *b, *p);
+            if det < 0. {
                 Right
             } else {
                 Left

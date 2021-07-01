@@ -56,9 +56,31 @@ fn main() {
     // let mut shape2 = Circle::new(Point::new(1., 0.), 0.5);
     // shape2.center = Isometry2::new(Vector::new(0., 0.), 45. * TAU / 360.) * shape2.center;
 
-    let shape1 =
-        ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(0.5, 0.5), 1f32.sqrt());
-    let shape2 = Circle::new(Point::new(1., 0.5), 0.55);
+    // let shape1 =
+    //     ConvexPolygon::new_rectangle(Point::new(0., 0.), Point::new(0.5, 0.5), 1f32.sqrt());
+    // let shape2 = Circle::new(Point::new(1., 0.5), 0.55);
+
+    // let shape1 = Circle {
+    //     center: Point::new(0.0, 0.0),
+    //     radius: 0.50001,
+    // };
+    // let shape2 = Circle {
+    //     center: Point::new(0.9998477, 0.017452406),
+    //     radius: 0.5,
+    // };
+
+    // let point1 = Point::new(0., 0.);
+    // let point2 = Point::new(0., 0.);
+
+    let shape1 = Aabb::new(Point::new(-0.75, -0.75), Point::new(0.75, 0.75));
+    let point1 = Point::new(739.5, 814.5);
+    let shape2 = Circle::new(Point::new(0.0, 0.0), 0.25);
+    let point2 = Point::new(739.597, 813.5169);
+
+    // let shape1 = Circle::new(Point::new(0.0, 0.0), 0.25);
+    // let point1 = Point::new(734.13696, 750.62823);
+    // let shape2 = Aabb::new(Point::new(-0.75, -0.75), Point::new(0.75, 0.75));
+    // let point2 = Point::new(735.0, 751.5);
 
     let mut imgbuf = image::ImageBuffer::from_pixel(imgx, imgy, image::Rgb([25, 25, 25]));
 
@@ -70,10 +92,8 @@ fn main() {
         )
     };
 
-    let (collides, simplex1) = ::kolli_desu::gjk::collides_internal(
-        (&shape1, Point::new(0., 0.)),
-        (&shape2, Point::new(0., 0.)),
-    );
+    let (collides, simplex1) =
+        ::kolli_desu::gjk::collides_internal((&shape1, point1), (&shape2, point2));
     println!("collides: {}", collides);
     println!(
         "{:?}",
@@ -82,11 +102,8 @@ fn main() {
             .map(|v| (v.x, v.y))
             .collect::<Vec<_>>()
     );
-    let (penetration, depth, simplex) = ::kolli_desu::epa::solve_internal(
-        (&shape1, Point::new(0., 0.)),
-        (&shape2, Point::new(0., 0.)),
-        simplex1.clone(),
-    );
+    let (penetration, depth, simplex) =
+        ::kolli_desu::epa::solve_internal((&shape1, point1), (&shape2, point2), simplex1.clone());
     println!(
         "{}: {:?}",
         simplex.len(),
@@ -94,26 +111,15 @@ fn main() {
     );
     println!("penetration: {}, depth: {}", penetration, depth);
 
-    let mut colors = VecDeque::new();
-    for c in &[[255, 255, 0], [0, 255, 255], [255, 0, 255]][..] {
-        colors.push_back(image::Rgb(*c));
-    }
-    let points1 = simplex1.into_iter().map(transform).collect::<Vec<_>>();
-    let steps = 10000;
-    for (from, to) in points1
-        .iter()
-        .zip(points1.iter().skip(1).chain(points1.first()))
-    {
-        let color = colors.pop_back().unwrap();
-        colors.push_front(color);
-        for n in 0..steps {
-            if n % 400 < 200 {
-                continue;
-            }
-            let f = n as f32 / steps as f32;
-            let p = from * f + to * (1. - f);
-            imgbuf[(p.x as u32, p.y as u32)] = color;
-        }
+    let steps = 36000;
+    for i in 0..steps {
+        let i = (i as f32 / steps as f32) * TAU;
+        let dir = Vector::new(i.sin(), i.cos());
+
+        // let val = shape1.farthest_in_dir(dir);
+        let val = kolli_desu::shapes::support((&shape1, point1), (&shape2, point2), dir);
+        let p = transform(val);
+        imgbuf[(p.x as u32, p.y as u32)] = image::Rgb([255, 0, 0]);
     }
 
     let points = simplex.into_iter().map(transform).collect::<Vec<_>>();
@@ -186,19 +192,27 @@ fn main() {
             imgbuf[(p.x as u32, p.y as u32)] = color;
         }
     }
-    let steps = 36000;
-    for i in 0..steps {
-        let i = (i as f32 / steps as f32) * TAU;
-        let dir = Vector::new(i.sin(), i.cos());
 
-        // let val = shape1.farthest_in_dir(dir);
-        let val = kolli_desu::shapes::support(
-            (&shape1, Point::new(0., 0.)),
-            (&shape2, Point::new(0., 0.)),
-            dir,
-        );
-        let p = transform(val);
-        imgbuf[(p.x as u32, p.y as u32)] = image::Rgb([255, 0, 0]);
+    let mut colors = VecDeque::new();
+    for c in &[[255, 255, 0], [0, 255, 255], [255, 0, 255]][..] {
+        colors.push_back(image::Rgb(*c));
+    }
+    let points1 = simplex1.into_iter().map(transform).collect::<Vec<_>>();
+    let steps = 10000;
+    for (from, to) in points1
+        .iter()
+        .zip(points1.iter().skip(1).chain(points1.first()))
+    {
+        let color = colors.pop_back().unwrap();
+        colors.push_front(color);
+        for n in 0..steps {
+            if n % 200 < 100 {
+                continue;
+            }
+            let f = n as f32 / steps as f32;
+            let p = from * f + to * (1. - f);
+            imgbuf[(p.x as u32, p.y as u32)] = color;
+        }
     }
 
     let zero = transform(Vector::new(0., 0.));
@@ -221,13 +235,14 @@ fn main() {
         let p = transform(val);
         imgbuf[(p.x as u32, p.y as u32)] = image::Rgb([255, 0, 0]);
     }
+    let diff = point2 - point1;
     for i in 0..steps {
         let i = (i as f32 / steps as f32) * TAU;
         let dir = Vector::new(i.sin(), i.cos());
 
         let val = shape2.farthest_in_dir(dir);
-        let p = transform(val);
-        imgbuf[(p.x as u32, p.y as u32)] = image::Rgb([0, 0, 255]);
+        let p = transform(val + diff);
+        imgbuf[(p.x as u32, p.y as u32)] = image::Rgb([0, 255, 0]);
     }
 
     let steps = 10000;
