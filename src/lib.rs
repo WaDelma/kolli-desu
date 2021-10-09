@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde_derive;
+
 use nalgebra as na;
 
 use std::fmt::Debug;
