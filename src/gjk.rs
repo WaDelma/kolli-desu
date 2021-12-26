@@ -1,4 +1,3 @@
-use crate::na::zero;
 use crate::shapes::support;
 
 use crate::shapes::Shape;
@@ -24,12 +23,12 @@ where
     S2: Shape + ?Sized,
 {
     let mut cur = (a.1 + a.0.start()) - (b.1 + b.0.start());
-    if cur == zero() {
+    if cur == Vector::new(0., 0.) {
         cur = Vector::new(1., 0.);
     }
     let mut simplex = Simplex::Point(support(a, b, cur));
     cur = -cur;
-    while cur != zero() {
+    while cur != Vector::new(0., 0.) {
         let support = support(a, b, cur);
         simplex.add(support);
         if support.dot(&cur) < 0. {
